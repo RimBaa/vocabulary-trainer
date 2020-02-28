@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:vocabulary/global_vars.dart';
 
+
 //adding a new language
 Future<String> addlanguage(BuildContext context) async {
   String lang = '';
@@ -56,19 +57,6 @@ changeCurrentLanguage(language) {
   currentlanguage = language;
   setCurrentLanguage(language);
   
-}
-
-selectLanguage(){
-
-}
-
-createLangList(context){
-  //  chooseLang = new ListView.builder(
-  //   itemCount: languages.length,
-  //   itemBuilder: (BuildContext context, int index){
-  //     return new Text(languages[index]);
-  //   });
-
 }
 
 class ListLang extends StatefulWidget{

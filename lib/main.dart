@@ -1,13 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:sqflite/sqflite.dart';
 import 'package:vocabulary/drawer.dart';
 import 'global_vars.dart';
 import 'language.dart';
 import 'vocable.dart';
+import 'package:path/path.dart';
 
 void main() {
   //SharedPreferences.setMockInitialValues({});
   runApp(new VocabularyApp());
+
 }
 
 // Future<Null> main() async {
@@ -27,6 +30,7 @@ class VocabularyState extends State<VocabularyApp> {
     super.initState();
     _getLanguages().whenComplete(() {
       setState(() {});
+      getDatabase();
     });
   }
 
@@ -84,12 +88,12 @@ class _MyHomePageState extends State<MyHomePage> {
           })
         ],
       ),
-      body: _homeScreen(),
+      body: _homeScreen(context),
       drawer: createDrawer(context),
     );
   }
 
-  Widget _homeScreen() {
+  Widget _homeScreen(context) {
     //no language to learn available
     if (currentlanguage == '0' || currentlanguage == null) {
       return new Center(

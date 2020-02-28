@@ -8,3 +8,6 @@ List<String>languages;
 final String keylanguageList = "languagesList";
 final String keylanguage = "currentLanguage";
  ListView chooseLang;
+ var database;
+ int dbSize;
+ List listTables;
