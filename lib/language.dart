@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:vocabulary/global_vars.dart';
+import 'package:vocabulary/vocable.dart';
 
 
 //adding a new language
@@ -39,6 +40,7 @@ Future<String> addlanguage(BuildContext context) async {
 //change current lang. in SharedPrefs.
 setCurrentLanguage(language) async {
   await prefs.setString(keylanguage, language);
+  getDatabase();
 }
 
 //adapt list of languages in SharedPrefs.
@@ -56,6 +58,10 @@ removeLanguage(language) {
 changeCurrentLanguage(language) {
   currentlanguage = language;
   setCurrentLanguage(language);
+  getCurrentDatabase().whenComplete(
+    getVocableList()
+  );
+  
   
 }
 

@@ -27,11 +27,11 @@ class VocabularyApp extends StatefulWidget {
 class VocabularyState extends State<VocabularyApp> {
   @override
   void initState() {
-    super.initState();
     _getLanguages().whenComplete(() {
       setState(() {});
       getDatabase();
     });
+    super.initState();
   }
 
   _getLanguages() async {
@@ -76,8 +76,11 @@ class _MyHomePageState extends State<MyHomePage> {
         actions: <Widget>[
           Container(padding: EdgeInsets.symmetric(vertical: 15.0),child: Text(currentlanguage, textAlign: TextAlign.center, style:TextStyle(fontSize: fontSize))),
           PopupMenuButton(
-            onSelected: (choice){changeCurrentLanguage(choice);
-            setState(() {});},
+            onSelected: (choice){
+            setState(() {
+              changeCurrentLanguage(choice);
+              
+            });},
             itemBuilder: (BuildContext context){
             return languages.map((String choice){
               return PopupMenuItem<String>(
