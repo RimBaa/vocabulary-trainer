@@ -25,14 +25,14 @@ createDrawer(context) {
             decoration: BoxDecoration(color: Colors.blue),
           ),
         ),
-        ListTile(
-          contentPadding: EdgeInsets.fromLTRB(10.0, 10.0, 10.0, 10.0),
-          title: Text(settings[0], style: TextStyle(fontSize: fontSize)),
-          onTap: () {
-            Navigator.push(
-                context, MaterialPageRoute(builder: (context) => ListLang()));
-          },
-        ),
+        // ListTile(
+        //   contentPadding: EdgeInsets.fromLTRB(10.0, 10.0, 10.0, 10.0),
+        //   title: Text(settings[0], style: TextStyle(fontSize: fontSize)),
+        //   onTap: () {
+        //     Navigator.push(
+        //         context, MaterialPageRoute(builder: (context) => ListLang()));
+        //   },
+        // ),
         ListTile(
           contentPadding: EdgeInsets.fromLTRB(10.0, 10.0, 10.0, 10.0),
           title: Text(settings[1], style: TextStyle(fontSize: fontSize)),

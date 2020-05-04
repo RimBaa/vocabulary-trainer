@@ -21,23 +21,6 @@ class _ListVocab extends State<ListVocab> {
     setState(() {});
     return Scaffold(
       appBar: AppBar(
-        actions: <Widget>[
-          Container(
-              padding: EdgeInsets.symmetric(vertical: 15.0),
-              child: Text(currentlanguage,
-                  textAlign: TextAlign.center,
-                  style: TextStyle(fontSize: fontSize))),
-          PopupMenuButton(onSelected: (choice) {
-            setState(() {
-              changeCurrentLanguage(choice);
-              getCurrentDatabase();
-            });
-          }, itemBuilder: (BuildContext context) {
-            return languages.map((String choice) {
-              return PopupMenuItem<String>(value: choice, child: Text(choice));
-            }).toList();
-          })
-        ],
         title: Text("vocabulary",
             style: TextStyle(fontSize: fontSize, color: Colors.white)),
         backgroundColor: Colors.blue,
@@ -94,30 +77,13 @@ Future<String> addVocable(BuildContext context) async {
 }
 
 //adding vocable to the databases
-addVoc2Table(vocab, translation) async {
+addVoc2Table(vocab, transl) async {
   int index = 0;
-  List idsList = [];
 
-  if (translationList != null) {
-    index = translationList.length + 1;
-    
-    Database dbTranslation = await database;
-    Database dbLearn = await databaseLearn;
-    List<Map<String, dynamic>> ids = await dbTranslation
-        .rawQuery('SELECT id FROM firstLang WHERE word = ?', [translation]);
-    ids.forEach((row) => idsList.add(row['id']));
+  await getVocableList();
+  print(vocableList.length);
+  index = vocableList.length;
 
-    // List<Map<String, dynamic>> idsLearn = await dbLearn.rawQuery(
-    //     'SELECT id FROM $currentlanguage WHERE id = ?', idsList);
-    // idsLearn.forEach((row) => print(row));
-
-//check if id of translation (idsList) exists in vocableList, if not take that id as index to insert vocable else index = translationList.length
-    for (var i = 0; i < vocableList.length; i++) {
-      
-
-    }
-
-  }
 
   // for the first entry where the size is null
   // if (dbSize != null) {
@@ -143,21 +109,20 @@ addVoc2Table(vocab, translation) async {
   //   }
   // }
 
-  var voc = VocableTable(id: index, word: vocab, section: 1);
-  var transl = VocableTable(id: index, word: translation, section: 1);
+  var voc = VocableTable(id: index, word: vocab, translation: transl,section: 1);
 
-  await insertVocable(transl, "firstLang");
-  await insertVocable(voc, currentlanguage);
+
+  await insertVocable(voc);
+
 }
 
 //get vocable list of current language
 getVocableList() async {
-  Database dbTrans = await database;
-  translationList = await dbTrans.query('firstLang');
-  Database dblearn = await databaseLearn;
-  vocableList = await dblearn.query(currentlanguage);
-  print(await vocable('firstLang'));
-  print(await vocable(currentlanguage));
+  Database db = await database;
+
+  vocableList = await db.query(dbName);
+  print(await vocable());
+
 }
 
 // create List of vocables
@@ -169,148 +134,136 @@ Widget _vocableList(context) {
             itemCount: vocableList.length,
             itemBuilder: (context, index) {
               return Container(
-                decoration: BoxDecoration(border: Border(bottom: BorderSide())),
-                child: Column(
-                  children: <Widget>[
-                    Container(
-                        margin: EdgeInsets.symmetric(vertical: 18.5),
-                        child: ListTile(
-                            subtitle: Text("section: " +
-                                (vocableList[index]['section']).toString()),
-                            title: Row(
-                              children: <Widget>[
-                                Text(vocableList[index]['word'],
-                                    style: TextStyle(fontSize: 20)),
-                                Text(translationList[index]['word'],
-                                    style: TextStyle(fontSize: 20))
-                              ],
-                            )))
-                  ],
-                ),
-              );
+                padding: const EdgeInsets.all(16.0),
+                decoration: BoxDecoration(border: Border(bottom: BorderSide(color: Colors.grey))),
+                child: Row(children: <Widget>[
+                  Expanded(
+                 child: Column(
+                   children: <Widget>[
+                //     Container(
+                //         margin: EdgeInsets.symmetric(vertical: 18.5),
+                //         child: 
+                        // Row(
+
+                        //   mainAxisAlignment: MainAxisAlignment.spaceAround,
+                        //   children: <Widget>[
+                        //    Column(
+                        //      children: <Widget>[Text(vocableList[index]['word'],
+                        //              style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),],),
+                        //    Column(children: <Widget>[Text(vocableList[index]['word'],
+                        //              style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),],)
+                        //   ],
+                        // )
+                        // ListTile(
+                        //     subtitle: Text("section: " +
+                        //         (vocableList[index]['section']).toString()),
+                        //     title: Row(
+                        //      mainAxisAlignment: MainAxisAlignment.spaceAround,
+                        //       children: <Widget>[
+                        //         Column(
+                        //           crossAxisAlignment:CrossAxisAlignment.start,
+                        //       children: <Widget>[
+                        //         Text(vocableList[index]['word'],
+                        //             style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
+                        //       ],
+                        //         ),
+                        //          Column(
+                        //           crossAxisAlignment:CrossAxisAlignment.start,
+                        //       children: <Widget>[
+                        //         Text(vocableList[index]['translation'],
+                        //             style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
+                        //       ],
+                        //         )
+                                
+                          
+                        //       ],
+                        //     ))
+                                 Text(vocableList[index]['word'],
+                                    style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
+                                    Text("section: " + vocableList[index]['section'].toString(),
+                                    style: TextStyle(fontSize: 12, color: Colors.grey) )
+                   ],
+                   crossAxisAlignment: CrossAxisAlignment.start )
+                  ),
+                  Expanded(child: 
+                                 Text(vocableList[index]['translation'],
+                                    style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),)
+                   ]
+                             )
+                  
+                  ,
+                 );
+              
             });
       });
 }
 
 //database methods
-Future<void> insertVocable(VocableTable vocable, String table) async {
+Future<void> insertVocable(VocableTable vocable) async {
   Database db;
-  if (table == 'firstLang') {
+
     db = await database;
-  } else {
-    db = await databaseLearn;
-  }
-  await db.insert(table, vocable.toMap(),
-      conflictAlgorithm: ConflictAlgorithm.replace);
+
+  await db.insert(dbName, vocable.toMap(),
+      conflictAlgorithm: ConflictAlgorithm.ignore);
 }
 
-Future<List<VocableTable>> vocable(String table) async {
+Future<List<VocableTable>> vocable() async {
   Database db;
-  if (table == 'firstLang') {
-    db = await database;
-  } else {
-    db = await databaseLearn;
-  }
 
-  final List<Map<String, dynamic>> maps = await db.query(table);
+    db = await database;
+  
+
+  final List<Map<String, dynamic>> maps = await db.query(dbName);
   dbSize = maps.length;
   return List.generate(maps.length, (i) {
     return VocableTable(
-        id: maps[i]['id'], word: maps[i]['word'], section: maps[i]['section']);
+        id: maps[i]['id'], word: maps[i]['word'], translation: maps[i]['translation'], section: maps[i]['section']);
   });
 }
 
-Future<void> updateVocableTable(VocableTable vocable, String table) async {
+Future<void> updateVocableTable(VocableTable vocable) async {
   Database db;
-  if (table == 'firstLang') {
+
     db = await database;
-  } else {
-    db = await databaseLearn;
-  }
+
   await db
-      .update(table, vocable.toMap(), where: "id = ?", whereArgs: [vocable.id]);
+      .update(dbName, vocable.toMap(), where: "id = ?", whereArgs: [vocable.id]);
 }
 
-Future<void> deleteVocableTable(int id, String table) async {
+Future<void> deleteVocableTable(int id) async {
   Database db;
-  if (table == 'firstLang') {
     db = await database;
-  } else {
-    db = await databaseLearn;
-  }
 
-  await db.delete(table, where: "id = ?", whereArgs: [id]);
+
+  await db.delete(dbName, where: "id = ?", whereArgs: [id]);
 }
 
-// getDatabase() async{
-// final datab = openDatabase(join(await getDatabasesPath(), 'firstLang.db'),
-//           onCreate: (db, version){
-//             return db.execute(
-//               "CREATE TABLE firstLang(id INTEGER PRIMARY KEY, word TEXT, section INTEGER)"
-//             );
-//           },
-//           version: 1
-//          );
-//   database = datab;
-
-//   for(int i= 0; i< languages.length ; i++){
-//     String name = languages[i];
-//     listTables[i] = openDatabase(join(await getDatabasesPath(), languages[i]+'.db'),
-//           onCreate: (db, version){
-//             return db.execute(
-//               "CREATE TABLE $name(id INTEGER PRIMARY KEY, word TEXT, section INTEGER)"
-//             );
-//           },
-//           version: 1
-//          );
-
-//   }
-// }
 
 getDatabase() async {
-  database = openDatabase(join(await getDatabasesPath(), 'firstLang.db'),
-      onCreate: (db, version) {
-    return db.execute(
-        "CREATE TABLE firstLang(id INTEGER PRIMARY KEY, word TEXT, section INTEGER)");
-  }, version: 1);
-  //database = datab;
-  String databasename = currentlanguage + '.db';
 
-  if (currentlanguage != '0') {
-    databaseLearn = openDatabase(join(await getDatabasesPath(), databasename),
+    String databasename = dbName+'.db';
+    database= openDatabase(join(await getDatabasesPath(), databasename),
         onCreate: (db, version) {
       return db.execute(
-          "CREATE TABLE $currentlanguage(id INTEGER PRIMARY KEY, word TEXT, section INTEGER)");
+          "CREATE TABLE $dbName(id INTEGER PRIMARY KEY, word TEXT, translation TEXT, section INTEGER)");
     }, version: 1);
-  }
-
-  // databaseLearn = databaselearn;
-}
-
-getCurrentDatabase() async {
-  if (currentlanguage != '0') {
-    String databasename = currentlanguage + '.db';
-    databaseLearn = openDatabase(join(await getDatabasesPath(), databasename),
-        onCreate: (db, version) {
-      return db.execute(
-          "CREATE TABLE $currentlanguage(id INTEGER PRIMARY KEY, word TEXT, section INTEGER)");
-    }, version: 1);
-  }
 }
 
 class VocableTable {
   final int id;
   final String word;
+  final String translation;
   final int section;
 
-  VocableTable({this.id, this.word, this.section});
+  VocableTable({this.id, this.word, this.translation, this.section});
 
   Map<String, dynamic> toMap() {
-    return {'id': id, 'word': word, 'section': section};
+    return {'id': id, 'word': word, 'translation': translation, 'section': section};
   }
 
   @override
   String toString() {
-    return '[$id, $word, $section]';
+    return '[$id, $word, $translation, $section]';
   }
 }
