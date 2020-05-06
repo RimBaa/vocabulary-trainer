@@ -12,3 +12,4 @@ const fontSize = 18.0;
  List listTables;
 List vocableList;
 String dbName = 'vocTable';
+List select2del = [];
