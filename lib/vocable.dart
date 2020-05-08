@@ -28,21 +28,7 @@ class _ListVocab extends State<ListVocab> {
             style: TextStyle(fontSize: fontSize, color: Colors.white)),
         backgroundColor: Colors.blue,
         actions: <Widget>[
-          PopupMenuButton(onSelected: (value) async {
-            print(value);
-            if (value == 'add') {
-              await addVocable(context);
-              await getVocableList();
-              deleteBool = false;
-            } else {
-              deleteBool = true;
-            }
-            setState(() {});
-          }, itemBuilder: (BuildContext context) {
-            return VocSettings.editVoc.map((String val) {
-              return PopupMenuItem(value: val, child: Text(val));
-            }).toList();
-          })
+          selectPopupMenu(context, deleteBool),
         ],
       ),
       body: voclist(context),
@@ -52,11 +38,41 @@ class _ListVocab extends State<ListVocab> {
     );
   }
 
+  selectPopupMenu(BuildContext context, bool delete) {
+    if (delete == false) {
+      return PopupMenuButton(onSelected: (value) async {
+        print(value);
+        if (value == 'add') {
+          await addVocable(context);
+          await getVocableList();
+          deleteBool = false;
+        } else {
+          deleteBool = true;
+        }
+        setState(() {});
+      }, itemBuilder: (BuildContext context) {
+        return VocSettings.editVoc.map((String val) {
+          return PopupMenuItem(value: val, child: Text(val));
+        }).toList();
+      });
+    } else {
+      return PopupMenuButton(onSelected: (value) async {
+        if (value == 'select all') {
+          select2del = List.filled(vocableList.length, true);
+        }
+        setState(() {});
+      }, itemBuilder: (BuildContext context) {
+        return [PopupMenuItem(value: 'select all', child: Text('select all'))];
+      });
+    }
+  }
+
 // create vocable list
   Widget voclist(context) {
     return FutureBuilder(
         future: getVocableList(),
         builder: (context, snapshot) {
+          if(snapshot.connectionState == ConnectionState.done){
           return new ListView.builder(
               scrollDirection: Axis.vertical,
               itemCount: vocableList.length,
@@ -70,15 +86,17 @@ class _ListVocab extends State<ListVocab> {
                           mainAxisAlignment: MainAxisAlignment.spaceAround,
                           children: withOrWithoutCheckbox(deleteBool, index)),
                     ),
-                    onTap: ()async {
+                    onTap: () async {
                       print(index);
-                     await editVoc(context, index);
-                     await getVocableList();
-                       setState(() {});
+                      await editVoc(context, index);
+                      await getVocableList();
+                      setState(() {});
                     },
                   ),
                 );
-              });
+              });}else {
+          return CircularProgressIndicator();
+        }
         });
   }
 
@@ -98,13 +116,15 @@ class _ListVocab extends State<ListVocab> {
           Text(vocableList[index]['word'], style: TextStyle(fontSize: 18)),
           Text(vocableList[index]['translation'],
               style: TextStyle(fontSize: 18)),
-          IconButton(
-            icon: getCheckbox(index),
-            onPressed: () {
-              select2del[index] = !select2del[index];
-              setState(() {});
-            },
-          )
+          Container(
+              width: 20,
+              child: IconButton(
+                icon: getCheckbox(index),
+                onPressed: () {
+                  select2del[index] = !select2del[index];
+                  setState(() {});
+                },
+              ))
         ]);
       } else
         return <Widget>[];
@@ -137,7 +157,7 @@ class _ListVocab extends State<ListVocab> {
               onPressed: () async {
                 for (var i = 0; i < select2del.length; i++) {
                   if (select2del[i] == true) {
-                    await deleteVocableTable(i);
+                    await deleteVocableTable(vocableList[i]['id']);
                   }
                 }
                 deleteBool = false;
@@ -191,7 +211,6 @@ Future<String> addVocable(BuildContext context) async {
               onPressed: () async {
                 Navigator.of(context).pop(word);
                 await addVoc2Table(word, translation);
-                // addVoc2Table(translation, currentlanguage);
               },
             )
           ],
@@ -214,7 +233,8 @@ Future<String> editVoc(BuildContext context, int index) async {
             children: <Widget>[
               new Expanded(
                   child: new TextField(
-                    controller: new TextEditingController(text:vocableList[index]['word']),
+                controller:
+                    new TextEditingController(text: vocableList[index]['word']),
                 autofocus: true,
                 decoration: new InputDecoration(labelText: 'word'),
                 onChanged: (value) {
@@ -223,7 +243,8 @@ Future<String> editVoc(BuildContext context, int index) async {
               )),
               new Expanded(
                   child: new TextField(
-                       controller: new TextEditingController(text:vocableList[index]['translation']),
+                controller: new TextEditingController(
+                    text: vocableList[index]['translation']),
                 autofocus: true,
                 decoration: new InputDecoration(labelText: 'translation'),
                 onChanged: (value) {
@@ -237,8 +258,12 @@ Future<String> editVoc(BuildContext context, int index) async {
               child: Text('Ok'),
               onPressed: () async {
                 Navigator.of(context).pop(word);
-               await updateVocableTable(VocableTable(id: vocableList[index]['id'],word: word, translation: translation,section: vocableList[index]['section']));
-              // await getVocableList();
+                await updateVocableTable(VocableTable(
+                    id: vocableList[index]['id'],
+                    word: word,
+                    translation: translation,
+                    section: vocableList[index]['section']));
+                // await getVocableList();
               },
             )
           ],
@@ -249,34 +274,27 @@ Future<String> editVoc(BuildContext context, int index) async {
 //adding vocable to the databases
 addVoc2Table(vocab, transl) async {
   int index = 0;
+  int largestId;
+  bool indexChosen = false;
+  await getVocableListId();
+  print(idList);
 
-  await getVocableList();
-  print(vocableList.length);
-  index = vocableList.length;
+  //finding id that isn't already used
+  if (idList.length > 0) {
+    largestId = idList[idList.length - 1];
 
-  // for the first entry where the size is null
-  // if (dbSize != null) {
-  //   dbSize = dbSize+1;
-  // }
-
-  // check if translation already in firstLang database
-  // -> if yes get id of translation
-
-  // for (var i = 0; i < translationList.length; i++) {
-  //   if(translationList[i]['word']== translation ){
-  //     for (var j = 0; i <= vocableList[j]['id'] ; j++) {
-  //       if (vocableList[j]['id'] == i){
-
-  //         break;
-  //       }
-  //       else if (vocableList.length-1 == j) {
-  //         index = i;
-  //         break;
-  //       }
-  //     }
-  //     break;
-  //   }
-  // }
+    for (int i = 0; i < largestId; i++) {
+      if (!idList.contains(i)) {
+        index = i;
+        indexChosen = true;
+        break;
+      }
+    }
+    if (indexChosen == false) {
+      index = largestId + 1;
+    }
+    print(largestId);
+  }
 
   var voc =
       VocableTable(id: index, word: vocab, translation: transl, section: 1);
@@ -290,6 +308,19 @@ getVocableList() async {
 
   vocableList = await db.query(dbName);
   print(await vocable());
+}
+
+//get ids of vocable list of current language
+getVocableListId() async {
+  Database db = await database;
+  idList = [];
+  vocableList = await db.query(dbName);
+ // print(await vocable());
+
+  for (int i = 0; i < vocableList.length; i++) {
+    idList.add(vocableList[i]['id']);
+  }
+  return idList;
 }
 
 //database methods
