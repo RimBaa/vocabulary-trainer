@@ -8,12 +8,13 @@ import 'vocable.dart';
 //begin learning
 class Learn extends StatefulWidget {
   @override
-  _Learn createState() => _Learn();
+  LearnState createState() => LearnState();
 }
 
-class _Learn extends State<Learn> {
+class LearnState extends State<Learn> {
   bool answered = false;
-  List<int> multChoiceIdList = [];
+  List<int> multChoiceList = [];
+  List<String> lettersList = [];
   int questionId;
   int wordOrtransl;
   List<Color> dynColor = [
@@ -24,6 +25,8 @@ class _Learn extends State<Learn> {
   ];
   List<int> correctCounter;
   bool newSession = true;
+  String answerMode;
+  String questionMode;
 
   @override
   Widget build(BuildContext context) {
@@ -37,11 +40,13 @@ class _Learn extends State<Learn> {
     );
   }
 
-// choose a word to test
+// choose a word to ask
   Widget showVoc(BuildContext context) {
     if (answered == false) {
+      ListVocabState vocListObj = new ListVocabState();
+
       return FutureBuilder(
-          future: getVocableList(),
+          future: vocListObj.getVocableList(),
           builder: (context, snapshot) {
             if (snapshot.connectionState == ConnectionState.done) {
               if (vocableList.length == 0) {
@@ -58,6 +63,16 @@ class _Learn extends State<Learn> {
                 questionId = rnd.nextInt(vocableList.length);
                 print(questionId);
 
+                wordOrtransl = rnd.nextInt(2);
+
+                if (wordOrtransl == 0) {
+                  answerMode = 'word';
+                  questionMode = 'translation';
+                } else {
+                  answerMode = 'translation';
+                  questionMode = 'word';
+                }
+
                 return learn(context);
               }
             } else {
@@ -70,29 +85,17 @@ class _Learn extends State<Learn> {
   }
 
 // one of three learn options
-  Widget learn(BuildContext context) {
+  learn(BuildContext context) {
     //multiple choice with 4 options
-    if (vocableList[questionId]['section'] >= 1 && vocableList.length > 3) {
-      if (answered == false) {
-        multChoiceIdList = [];
-        dynColor = [Colors.white, Colors.white, Colors.white, Colors.white];
-        int randNumb;
-        Random rnd = new Random();
-        wordOrtransl = rnd.nextInt(2);
-
-        multChoiceIdList.add(questionId);
-
-        while (multChoiceIdList.length < 4) {
-          randNumb = rnd.nextInt(vocableList.length);
-
-          if (!multChoiceIdList.contains(randNumb)) {
-            multChoiceIdList.add(randNumb);
-          }
-        }
-      }
-      return multipleChoice(multChoiceIdList, wordOrtransl);
-    } else if (vocableList[questionId]['section'] == 2) {
-      return Column();
+    if (vocableList[questionId]['section'] >= 2 && vocableList.length > 3) {
+      return multipleChoice();
+    } else if (vocableList[questionId]['section'] >= 1) {
+    
+              
+          //       Navigator.of(context).push(MaterialPageRoute(
+          // builder: (context) =>
+          //     LettersOrder(questionId, questionMode, answerMode)));
+      return letterOrder();
     } else if (vocableList[questionId]['section'] == 3) {
       return Column();
     }
@@ -100,13 +103,24 @@ class _Learn extends State<Learn> {
 
 // create page body with multiple choice
 // after 6 correct answers section will be updated till section 3
-  Widget multipleChoice(List<int> multChoiceList, int wordOrtransl) {
+  Widget multipleChoice() {
     Timer timer;
     int section = 1;
-    String answerMode;
-    String questionMode;
 
     if (answered == false) {
+      multChoiceList = [];
+      dynColor = [Colors.white, Colors.white, Colors.white, Colors.white];
+      int randNumb;
+      Random rnd = new Random();
+      multChoiceList.add(questionId);
+      while (multChoiceList.length < 4) {
+        randNumb = rnd.nextInt(vocableList.length);
+
+        if (!multChoiceList.contains(randNumb)) {
+          multChoiceList.add(randNumb);
+        }
+      }
+
       multChoiceList.shuffle();
       section = vocableList[questionId]['section'];
     } else {
@@ -118,20 +132,12 @@ class _Learn extends State<Learn> {
               }));
     }
 
-    int idPosition = multChoiceIdList.indexOf(questionId);
+    int idPosition = multChoiceList.indexOf(questionId);
 
     print(multChoiceList);
     print(vocableList);
     print(vocableList[questionId]);
     print(correctCounter);
-
-    if (wordOrtransl == 0) {
-      answerMode = 'word';
-      questionMode = 'translation';
-    } else {
-      answerMode = 'translation';
-      questionMode = 'word';
-    }
 
     return Column(
       children: <Widget>[
@@ -296,6 +302,123 @@ class _Learn extends State<Learn> {
                     )),
               ],
             ))
+      ],
+    );
+  }
+
+ //LetterOrder
+  Widget letterOrder() {
+    String answer = vocableList[questionId][answerMode];
+
+    if (answered == false) {
+      lettersList = [];
+      lettersList = answer.split('');
+      print(lettersList);
+    }
+
+    return Column(
+      children: <Widget>[
+        Container(
+            padding: EdgeInsets.all(10),
+            height: 200,
+            child: Row(children: <Widget>[
+              Text(vocableList[questionId][questionMode],
+                  style: TextStyle(fontSize: 25, fontWeight: FontWeight.bold)),
+            ])),
+        Container(
+            padding: EdgeInsets.all(10),
+            height: 200,
+            child: Row(
+              children: <Widget>[],
+            )),
+        Wrap(
+            spacing: 6.0,
+            runSpacing: 6.0,
+            children: List<Widget>.generate(
+                lettersList.length,
+                (index) => ActionChip(
+                      label: Text(lettersList[index]),
+                      onPressed: () {
+                        lettersList.removeAt(index);
+                        setState(() {});
+                      },
+                    )))
+      ],
+    );
+  }
+
+
+
+}
+
+class LettersOrder extends StatefulWidget {
+// bool answered = false;
+  final int questionId;
+  final String answerMode;
+  final String questionMode;
+
+  const LettersOrder(this.questionId, this.answerMode, this.questionMode);
+
+  @override
+  LettersOrderState createState() => LettersOrderState();
+}
+
+class LettersOrderState extends State<LettersOrder> {
+  // bool answered = false;
+  bool answered;
+  List<String> lettersList;
+
+//LettersOrderState(int questionId, String answerMode, String questionMode, bool answered);
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text("learn",
+            style: TextStyle(fontSize: fontSize, color: Colors.white)),
+        backgroundColor: Colors.blue,
+      ),
+      body: letterOrder(),
+    );
+  }
+
+  //LetterOrder
+  Widget letterOrder() {
+    String answer = vocableList[widget.questionId][widget.answerMode];
+
+    if (answered == false) {
+      lettersList = [];
+      lettersList = answer.split('');
+      print(lettersList);
+    }
+
+    return Column(
+      children: <Widget>[
+        Container(
+            padding: EdgeInsets.all(10),
+            height: 200,
+            child: Row(children: <Widget>[
+              Text(vocableList[widget.questionId][widget.questionMode],
+                  style: TextStyle(fontSize: 25, fontWeight: FontWeight.bold)),
+            ])),
+        Container(
+            padding: EdgeInsets.all(10),
+            height: 200,
+            child: Row(
+              children: <Widget>[],
+            )),
+        Wrap(
+            spacing: 6.0,
+            runSpacing: 6.0,
+            children: List<Widget>.generate(
+                lettersList.length,
+                (index) => ActionChip(
+                      label: Text(lettersList[index]),
+                      onPressed: () {
+                        lettersList.removeAt(index);
+                        setState(() {});
+                      },
+                    )))
       ],
     );
   }

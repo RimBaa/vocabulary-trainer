@@ -1,6 +1,6 @@
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter/material.dart';
-import 'package:sqflite/sqlite_api.dart';
+//import 'package:sqflite/sqlite_api.dart';
 
 SharedPreferences prefs;
 
@@ -14,3 +14,5 @@ List vocableList;
 String dbName = 'vocTable';
 List select2del = [];
 List<int> idList = [];
+
+//List<int> correctCounter = [];

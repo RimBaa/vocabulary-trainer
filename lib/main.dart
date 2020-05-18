@@ -1,17 +1,16 @@
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import 'package:sqflite/sqflite.dart';
+//import 'package:shared_preferences/shared_preferences.dart';
+//import 'package:sqflite/sqflite.dart';
 import 'package:vocabulary/drawer.dart';
-import 'global_vars.dart';
-import 'language.dart';
+//import 'global_vars.dart';
+//import 'language.dart';
 import 'vocable.dart';
-import 'package:path/path.dart';
+//import 'package:path/path.dart';
 import 'learn.dart';
 
 void main() {
   //SharedPreferences.setMockInitialValues({});
   runApp(new VocabularyApp());
-
 }
 
 // Future<Null> main() async {
@@ -28,7 +27,7 @@ class VocabularyApp extends StatefulWidget {
 class VocabularyState extends State<VocabularyApp> {
   @override
   void initState() {
-      getDatabase();
+    getDatabase();
     super.initState();
   }
 
@@ -56,8 +55,6 @@ class MyHomePage extends StatefulWidget {
 //home screen
 class _MyHomePageState extends State<MyHomePage> {
 
-
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -73,14 +70,16 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   Widget _homeScreen(context) {
-      return new Center(
-          child: Column(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: <Widget>[
-            RaisedButton(
-             onPressed: () async {
-               addVocable(context);
-             },
+    return new Center(
+        child: Column(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: <Widget>[
+          RaisedButton(
+            onPressed: () async {
+              ListVocabState mainScreenObj = new ListVocabState();
+               
+              mainScreenObj.addVocable(context);
+            },
             //   child: const Text("add a new  language",
             //       style: TextStyle(fontSize: 20, color: Colors.white)),
             //   color: Colors.blue,
@@ -90,21 +89,21 @@ class _MyHomePageState extends State<MyHomePage> {
             //   onPressed: () async {
             //     await addVocable(context);
             //   },
-              child: const Text("add a vocable",
-                  style: TextStyle(fontSize: 20, color: Colors.white)),
-              color: Colors.blue,
-              padding: EdgeInsets.symmetric(vertical: 30.0, horizontal: 70.0),
-            ),
-            RaisedButton(
-              onPressed: () async {
- Navigator.push(context,
-                MaterialPageRoute(builder: (context) => Learn()));
-              },
-              child: const Text("start learning",
-                  style: TextStyle(fontSize: 20, color: Colors.white)),
-              color: Colors.blue,
-              padding: EdgeInsets.symmetric(vertical: 30.0, horizontal: 70.0),
-            )
-          ]));
+            child: const Text("add a vocable",
+                style: TextStyle(fontSize: 20, color: Colors.white)),
+            color: Colors.blue,
+            padding: EdgeInsets.symmetric(vertical: 30.0, horizontal: 70.0),
+          ),
+          RaisedButton(
+            onPressed: () async {
+              Navigator.push(
+                  context, MaterialPageRoute(builder: (context) => Learn()));
+            },
+            child: const Text("start learning",
+                style: TextStyle(fontSize: 20, color: Colors.white)),
+            color: Colors.blue,
+            padding: EdgeInsets.symmetric(vertical: 30.0, horizontal: 70.0),
+          )
+        ]));
   }
 }

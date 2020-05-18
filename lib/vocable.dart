@@ -3,15 +3,15 @@ import 'package:vocabulary/global_vars.dart';
 import 'dart:async';
 import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart';
-import 'language.dart';
+//import 'language.dart';
 
 // page with list of vocables
 class ListVocab extends StatefulWidget {
   @override
-  _ListVocab createState() => _ListVocab();
+  ListVocabState createState() => ListVocabState();
 }
 
-class _ListVocab extends State<ListVocab> {
+class ListVocabState extends State<ListVocab> {
   bool deleteBool = false;
 
   void initState() {
@@ -72,31 +72,32 @@ class _ListVocab extends State<ListVocab> {
     return FutureBuilder(
         future: getVocableList(),
         builder: (context, snapshot) {
-          if(snapshot.connectionState == ConnectionState.done){
-          return new ListView.builder(
-              scrollDirection: Axis.vertical,
-              itemCount: vocableList.length,
-              shrinkWrap: true,
-              itemBuilder: (context, index) {
-                return Card(
-                  child: InkWell(
-                    child: Container(
-                      height: 70,
-                      child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceAround,
-                          children: withOrWithoutCheckbox(deleteBool, index)),
+          if (snapshot.connectionState == ConnectionState.done) {
+            return new ListView.builder(
+                scrollDirection: Axis.vertical,
+                itemCount: vocableList.length,
+                shrinkWrap: true,
+                itemBuilder: (context, index) {
+                  return Card(
+                    child: InkWell(
+                      child: Container(
+                        height: 70,
+                        child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceAround,
+                            children: withOrWithoutCheckbox(deleteBool, index)),
+                      ),
+                      onTap: () async {
+                        print(index);
+                        await editVoc(context, index);
+                        await getVocableList();
+                        setState(() {});
+                      },
                     ),
-                    onTap: () async {
-                      print(index);
-                      await editVoc(context, index);
-                      await getVocableList();
-                      setState(() {});
-                    },
-                  ),
-                );
-              });}else {
-          return CircularProgressIndicator();
-        }
+                  );
+                });
+          } else {
+            return CircularProgressIndicator();
+          }
         });
   }
 
@@ -171,159 +172,160 @@ class _ListVocab extends State<ListVocab> {
     } else
       return Row();
   }
-}
 
 // adding vocables
-Future<String> addVocable(BuildContext context) async {
-  String word = '';
-  String translation = '';
+  Future<String> addVocable(BuildContext context) async {
+    String word = '';
+    String translation = '';
 
-  return showDialog<String>(
-      context: context,
-      barrierDismissible: true,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text('Enter a new vocable'),
-          content: new Column(
-            mainAxisSize: MainAxisSize.min,
-            children: <Widget>[
-              new Expanded(
-                  child: new TextField(
-                autofocus: true,
-                decoration: new InputDecoration(labelText: 'word'),
-                onChanged: (value) {
-                  word = value;
+    return showDialog<String>(
+        context: context,
+        barrierDismissible: true,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: Text('Enter a new vocable'),
+            content: new Column(
+              mainAxisSize: MainAxisSize.min,
+              children: <Widget>[
+                new Expanded(
+                    child: new TextField(
+                  autofocus: true,
+                  decoration: new InputDecoration(labelText: 'word'),
+                  onChanged: (value) {
+                    word = value;
+                  },
+                )),
+                new Expanded(
+                    child: new TextField(
+                  autofocus: true,
+                  decoration: new InputDecoration(labelText: 'translation'),
+                  onChanged: (value) {
+                    translation = value;
+                  },
+                ))
+              ],
+            ),
+            actions: <Widget>[
+              FlatButton(
+                child: Text('Ok'),
+                onPressed: () async {
+                  Navigator.of(context).pop(word);
+                  await addVoc2Table(word, translation);
                 },
-              )),
-              new Expanded(
-                  child: new TextField(
-                autofocus: true,
-                decoration: new InputDecoration(labelText: 'translation'),
-                onChanged: (value) {
-                  translation = value;
-                },
-              ))
+              )
             ],
-          ),
-          actions: <Widget>[
-            FlatButton(
-              child: Text('Ok'),
-              onPressed: () async {
-                Navigator.of(context).pop(word);
-                await addVoc2Table(word, translation);
-              },
-            )
-          ],
-        );
-      });
-}
+          );
+        });
+  }
 
-Future<String> editVoc(BuildContext context, int index) async {
-  String word = vocableList[index]['word'];
-  String translation = vocableList[index]['translation'];
+  Future<String> editVoc(BuildContext context, int index) async {
+    String word = vocableList[index]['word'];
+    String translation = vocableList[index]['translation'];
 
-  return showDialog<String>(
-      context: context,
-      barrierDismissible: true,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text('Edit a vocable'),
-          content: new Column(
-            mainAxisSize: MainAxisSize.min,
-            children: <Widget>[
-              new Expanded(
-                  child: new TextField(
-                controller:
-                    new TextEditingController(text: vocableList[index]['word']),
-                autofocus: true,
-                decoration: new InputDecoration(labelText: 'word'),
-                onChanged: (value) {
-                  word = value;
+    return showDialog<String>(
+        context: context,
+        barrierDismissible: true,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: Text('Edit a vocable'),
+            content: new Column(
+              mainAxisSize: MainAxisSize.min,
+              children: <Widget>[
+                new Expanded(
+                    child: new TextField(
+                  controller: new TextEditingController(
+                      text: vocableList[index]['word']),
+                  autofocus: true,
+                  decoration: new InputDecoration(labelText: 'word'),
+                  onChanged: (value) {
+                    word = value;
+                  },
+                )),
+                new Expanded(
+                    child: new TextField(
+                  controller: new TextEditingController(
+                      text: vocableList[index]['translation']),
+                  autofocus: true,
+                  decoration: new InputDecoration(labelText: 'translation'),
+                  onChanged: (value) {
+                    translation = value;
+                  },
+                ))
+              ],
+            ),
+            actions: <Widget>[
+              FlatButton(
+                child: Text('Ok'),
+                onPressed: () async {
+                  Navigator.of(context).pop(word);
+                  await updateVocableTable(VocableTable(
+                      id: vocableList[index]['id'],
+                      word: word,
+                      translation: translation,
+                      section: vocableList[index]['section']));
+                  // await getVocableList();
                 },
-              )),
-              new Expanded(
-                  child: new TextField(
-                controller: new TextEditingController(
-                    text: vocableList[index]['translation']),
-                autofocus: true,
-                decoration: new InputDecoration(labelText: 'translation'),
-                onChanged: (value) {
-                  translation = value;
-                },
-              ))
+              )
             ],
-          ),
-          actions: <Widget>[
-            FlatButton(
-              child: Text('Ok'),
-              onPressed: () async {
-                Navigator.of(context).pop(word);
-                await updateVocableTable(VocableTable(
-                    id: vocableList[index]['id'],
-                    word: word,
-                    translation: translation,
-                    section: vocableList[index]['section']));
-                // await getVocableList();
-              },
-            )
-          ],
-        );
-      });
-}
+          );
+        });
+  }
 
 //adding vocable to the databases
-addVoc2Table(vocab, transl) async {
-  int index = 0;
-  int largestId;
-  bool indexChosen = false;
-  await getVocableListId();
-  print(idList);
+  addVoc2Table(vocab, transl) async {
+    int index = 0;
+    int largestId;
+    bool indexChosen = false;
+    await getVocableListId();
+    print(idList);
 
-  //finding id that isn't already used
-  if (idList.length > 0) {
-    largestId = idList[idList.length - 1];
+    //finding id that isn't already used
+    if (idList.length > 0) {
+      largestId = idList[idList.length - 1];
 
-    for (int i = 0; i < largestId; i++) {
-      if (!idList.contains(i)) {
-        index = i;
-        indexChosen = true;
-        break;
+      for (int i = 0; i < largestId; i++) {
+        if (!idList.contains(i)) {
+          index = i;
+          indexChosen = true;
+          break;
+        }
       }
+      if (indexChosen == false) {
+        index = largestId + 1;
+      }
+      print(largestId);
     }
-    if (indexChosen == false) {
-      index = largestId + 1;
-    }
-    print(largestId);
+
+    var voc =
+        VocableTable(id: index, word: vocab, translation: transl, section: 1);
+
+    await insertVocable(voc);
   }
 
-  var voc =
-      VocableTable(id: index, word: vocab, translation: transl, section: 1);
+  //get vocable list of current language
+  getVocableList() async {
+    Database db = await database;
 
-  await insertVocable(voc);
-}
-
-//get vocable list of current language
-getVocableList() async {
-  Database db = await database;
-
-  vocableList = await db.query(dbName);
-  print(await vocable());
-}
+    vocableList = await db.query(dbName);
+    print(await vocable());
+  }
 
 //get ids of vocable list of current language
-getVocableListId() async {
-  Database db = await database;
-  idList = [];
-  vocableList = await db.query(dbName);
- // print(await vocable());
+  getVocableListId() async {
+    Database db = await database;
+    idList = [];
+    vocableList = await db.query(dbName);
+    // print(await vocable());
 
-  for (int i = 0; i < vocableList.length; i++) {
-    idList.add(vocableList[i]['id']);
+    for (int i = 0; i < vocableList.length; i++) {
+      idList.add(vocableList[i]['id']);
+    }
+    return idList;
   }
-  return idList;
 }
 
 //database methods
+
 Future<void> insertVocable(VocableTable vocable) async {
   Database db;
 
