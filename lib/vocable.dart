@@ -23,6 +23,7 @@ class ListVocabState extends State<ListVocab> {
   Widget build(BuildContext context) {
     setState(() {});
     return Scaffold(
+      resizeToAvoidBottomInset: false,
       appBar: AppBar(
         title: Text("vocabulary",
             style: TextStyle(fontSize: fontSize, color: Colors.white)),
