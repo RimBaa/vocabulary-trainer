@@ -16,6 +16,7 @@ class ListVocabState extends State<ListVocab> {
 
   void initState() {
     super.initState();
+
     deleteBool = false;
   }
 
@@ -27,7 +28,7 @@ class ListVocabState extends State<ListVocab> {
       appBar: AppBar(
         title: Text("vocabulary",
             style: TextStyle(fontSize: fontSize, color: Colors.white)),
-        backgroundColor: Colors.blue,
+        backgroundColor: Colors.amber,
         actions: <Widget>[
           selectPopupMenu(context, deleteBool),
         ],
@@ -36,6 +37,7 @@ class ListVocabState extends State<ListVocab> {
       bottomNavigationBar: BottomAppBar(
         child: _addRowDel(deleteBool),
       ),
+      floatingActionButton: FloatingActionButton(child: Icon(Icons.add),backgroundColor:Colors.amber,onPressed: (){}),
     );
   }
 
@@ -70,44 +72,52 @@ class ListVocabState extends State<ListVocab> {
 
 // create vocable list
   Widget voclist(context) {
-    return FutureBuilder(
-        future: getVocableList(),
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.done) {
-            return new ListView.builder(
-                scrollDirection: Axis.vertical,
-                itemCount: vocableList.length,
-                shrinkWrap: true,
-                itemBuilder: (context, index) {
-                  return Card(
-                    child: InkWell(
-                      child: Container(
-                        height: 70,
-                        child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceAround,
-                            children: withOrWithoutCheckbox(deleteBool, index)),
-                      ),
-                      onTap: () async {
-                        print(index);
-                        await editVoc(context, index);
-                        await getVocableList();
-                        setState(() {});
-                      },
-                    ),
-                  );
-                });
-          } else {
-            return CircularProgressIndicator();
-          }
-        });
+    print(vocableList);
+    if (vocableList != null) {
+      return ListView.builder(
+          scrollDirection: Axis.vertical,
+          itemCount: vocableList.length,
+          shrinkWrap: true,
+          itemBuilder: (context, index) {
+            return Card(
+              child: InkWell(
+                child: Container(
+                  height: 70,
+                  child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: withOrWithoutCheckbox(deleteBool, index)),
+                ),
+                onTap: () async {
+                  print(index);
+                  await editVoc(context, index);
+                  await getVocableList();
+                  setState(() {});
+                },
+              ),
+            );
+          });
+    }
   }
 
 // adding checkbox for deleting vocables if delete has been pressed
   withOrWithoutCheckbox(bool delete, int index) {
     if (delete == false) {
       return (<Widget>[
-        Text(vocableList[index]['word'], style: TextStyle(fontSize: 18)),
-        Text(vocableList[index]['translation'], style: TextStyle(fontSize: 18))
+        Container(
+            width: 50,
+            child: Text(vocableList[index]['word'],
+                style: TextStyle(fontSize: 18))),
+        Container(
+            width: 10,
+            margin: EdgeInsets.symmetric(vertical: 10.0),
+            child: VerticalDivider(
+              color: Colors.amber,
+              thickness: 0.5,
+            )),
+        Container(
+            width: 50,
+            child: Text(vocableList[index]['translation'],
+                style: TextStyle(fontSize: 18)))
       ]);
     } else {
       if (select2del.length != vocableList.length) {
@@ -115,9 +125,21 @@ class ListVocabState extends State<ListVocab> {
       }
       if (select2del.length > 0) {
         return (<Widget>[
-          Text(vocableList[index]['word'], style: TextStyle(fontSize: 18)),
-          Text(vocableList[index]['translation'],
-              style: TextStyle(fontSize: 18)),
+          Container(
+              width: 50,
+              child: Text(vocableList[index]['word'],
+                  style: TextStyle(fontSize: 18))),
+          Container(
+              width: 10,
+              margin: EdgeInsets.symmetric(vertical: 10.0),
+              child: VerticalDivider(
+                color: Colors.amber,
+                thickness: 0.5,
+              )),
+          Container(
+              width: 50,
+              child: Text(vocableList[index]['translation'],
+                  style: TextStyle(fontSize: 18))),
           Container(
               width: 20,
               child: IconButton(

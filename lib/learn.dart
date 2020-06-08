@@ -11,6 +11,7 @@ class Learn extends StatefulWidget {
 
 class LearnState extends State<Learn> {
   bool answered = false;
+  List<int> questionList = [];
   List<int> multChoiceList = [];
   List<String> lettersList = [];
   int questionId;
@@ -26,11 +27,19 @@ class LearnState extends State<Learn> {
   String answerMode;
   String questionMode;
   bool newSession = true;
+  bool _loading;
+  double progressvalue;
+  int progresscounter;
+  int vocablenumber;
+  double addprogress;
 
   @override
   void initState() {
     super.initState();
 
+    _loading = false;
+    progressvalue = 0.0;
+    progresscounter = 0;
     ListVocabState vocListObj = new ListVocabState();
     vocListObj.getVocableList().whenComplete(() {
       setState(() {
@@ -49,28 +58,45 @@ class LearnState extends State<Learn> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: test(context),
+      body: getlearnoption(context),
     );
   }
 //   }
 
-  Widget test(BuildContext context) {
+  Widget getlearnoption(BuildContext context) {
+    if (vocableList.length > 9) {
+      vocablenumber = 10;
+    } else {
+      vocablenumber = vocableList.length;
+    }
+    addprogress = 1 / (3 * vocablenumber);
+
     print(vocableList);
     if (vocableList != null) {
-      if (vocableList.length == 0) {
+      if (vocableList.length <= 3) {
         return new Container(
             width: 150,
             height: 150,
-            child: Text("There are no vocables to learn"));
+            child: Text(
+                "There are not enough vocables to learn. At least 4 vocables are needed."));
       } else {
         if (newSession == true) {
           correctCounter = List.filled(vocableList.length, 0);
           newSession = false;
         }
         Random rnd = new Random();
-        questionId = rnd.nextInt(vocableList.length);
+
+        while (questionList.length < vocablenumber) {
+          int question = rnd.nextInt(vocableList.length);
+          if (!questionList.contains(question)) {
+            questionList.add(question);
+          }
+        }
+        questionId = questionList[0];
+        ;
         print(questionId);
 
+        print(questionList);
         wordOrtransl = rnd.nextInt(2);
 
         if (wordOrtransl == 0) {
@@ -80,6 +106,7 @@ class LearnState extends State<Learn> {
           answerMode = 'translation';
           questionMode = 'word';
         }
+
         return learn(context);
       }
     }
@@ -96,10 +123,10 @@ class LearnState extends State<Learn> {
     //multiple choice with 4 options
     if (vocableList[questionId]['section'] >= 1 &&
         vocableList.length > 3 &&
-        rndOption == 1) {
+        rndOption == 0) {
       return new MultChoiceCl(
           questionId, answerMode, questionMode, callback, correctCounter);
-    } else if (vocableList[questionId]['section'] >= 1 && rndOption == 0) {
+    } else if (vocableList[questionId]['section'] >= 1 && rndOption == 1) {
       return new LettersOrder(
           questionId, questionMode, answerMode, callback, correctCounter);
     } else if (vocableList[questionId]['section'] == 3 && rndOption == 2) {
@@ -144,9 +171,20 @@ class MultChoiceState extends State<MultChoiceCl> {
       appBar: AppBar(
         title: Text("learn",
             style: TextStyle(fontSize: fontSize, color: Colors.white)),
-        backgroundColor: Colors.blue,
+        backgroundColor: Colors.amber,
       ),
-      body: multipleChoice(),
+      body: Column(children: [
+        Container(
+            height: 50,
+            width: MediaQuery.of(context).size.width - 20,
+            child: Center(
+                child: LinearProgressIndicator(
+              value: 0.5,
+              backgroundColor: Colors.amberAccent[100],
+              valueColor: AlwaysStoppedAnimation(Colors.amber),
+            ))),
+        multipleChoice()
+      ]),
     );
   }
 
@@ -192,6 +230,7 @@ class MultChoiceState extends State<MultChoiceCl> {
             padding: EdgeInsets.all(10),
             height: 100,
             child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
               children: <Widget>[
                 Text(vocableList[widget.questionId][widget.questionMode],
                     style:
@@ -199,7 +238,7 @@ class MultChoiceState extends State<MultChoiceCl> {
               ],
             )),
         Container(
-            height: 450,
+            height: 380,
             child: GridView.count(
               crossAxisCount: 2,
               children: <Widget>[
@@ -393,7 +432,7 @@ class MultChoiceState extends State<MultChoiceCl> {
                   children: <Widget>[
                     Text(
                       iscorrect + ' \n',
-                      textAlign: TextAlign.left,
+                      textAlign: TextAlign.center,
                       style: TextStyle(
                           color: textcolor,
                           fontSize: 20.0,
@@ -406,7 +445,7 @@ class MultChoiceState extends State<MultChoiceCl> {
                     children: <Widget>[
                       Text(
                         correctanswer,
-                        textAlign: TextAlign.left,
+                        textAlign: TextAlign.center,
                         style: TextStyle(
                             fontSize: 15.0, fontWeight: FontWeight.bold),
                       ),
@@ -455,7 +494,7 @@ class LettersOrderState extends State<LettersOrder> {
       appBar: AppBar(
         title: Text("learn",
             style: TextStyle(fontSize: fontSize, color: Colors.white)),
-        backgroundColor: Colors.blue,
+        backgroundColor: Colors.amber,
       ),
       body: letterOrder(),
     );
@@ -470,15 +509,15 @@ class LettersOrderState extends State<LettersOrder> {
       lettersList = [];
 
 //hangul syllable block
-      if (answer.codeUnitAt(0) > 44032) {
-        isKorean = true;
-        lettersList = getLetters(answer);
-      }
+      // if (answer.codeUnitAt(0) > 44032) {
+      //   isKorean = true;
+      //   lettersList = getLetters(answer);
+      // }
       //latin character
-      else {
-        isKorean = false;
-        lettersList = answer.split('');
-      }
+      // else {
+      isKorean = false;
+      lettersList = answer.split('');
+      // }
 
       lettersList.shuffle();
       while (lettersList == answer.split('')) {
@@ -501,10 +540,13 @@ class LettersOrderState extends State<LettersOrder> {
               10.0,
             ),
             height: 150,
-            child: Row(children: <Widget>[
-              Text(vocableList[widget.questionId][widget.questionMode],
-                  style: TextStyle(fontSize: 25, fontWeight: FontWeight.bold)),
-            ])),
+            child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: <Widget>[
+                  Text(vocableList[widget.questionId][widget.questionMode],
+                      style:
+                          TextStyle(fontSize: 25, fontWeight: FontWeight.bold)),
+                ])),
         Container(
             width: 300,
             padding: EdgeInsets.fromLTRB(
@@ -544,9 +586,9 @@ class LettersOrderState extends State<LettersOrder> {
                             answered = true;
 
                             if (lettersList.length == 0 && answered == true) {
-                              if (isKorean) {
-                                answerStr = getSyllable(answerStr);
-                              }
+                              // if (isKorean) {
+                              //   answerStr = getSyllable(answerStr);
+                              // }
                               print(answerStr);
                               print(answerStr.codeUnits);
                               print(answer.codeUnits);
@@ -866,12 +908,11 @@ class LettersOrderState extends State<LettersOrder> {
             } else {
               //vc if c is last letter of answer
               if (onlyinitialList.contains(unicode)) {
-                 if (onlyoneletter == true) {
+                if (onlyoneletter == true) {
                   unicodeBlock = answer.codeUnitAt(i - 1);
                 }
                 syllable = syllable + String.fromCharCode(unicodeBlock);
                 syllable = syllable + String.fromCharCode(unicode);
-                
               } else {
                 if (unicode < 4449) {
                   cons = initialFinalMap[cons];
@@ -1139,7 +1180,7 @@ class LettersOrderState extends State<LettersOrder> {
                   children: <Widget>[
                     Text(
                       iscorrect + ' \n',
-                      textAlign: TextAlign.left,
+                      textAlign: TextAlign.center,
                       style: TextStyle(
                           color: textcolor,
                           fontSize: 20.0,
@@ -1152,7 +1193,7 @@ class LettersOrderState extends State<LettersOrder> {
                     children: <Widget>[
                       Text(
                         correctanswer,
-                        textAlign: TextAlign.left,
+                        textAlign: TextAlign.center,
                         style: TextStyle(
                             fontSize: 15.0, fontWeight: FontWeight.bold),
                       ),
@@ -1208,7 +1249,7 @@ class _EnterAnswerState extends State<EnterAnswerCl> {
       appBar: AppBar(
         title: Text("learn",
             style: TextStyle(fontSize: fontSize, color: Colors.white)),
-        backgroundColor: Colors.blue,
+        backgroundColor: Colors.amber,
       ),
       body: enterAnswer(),
     );
@@ -1225,10 +1266,13 @@ class _EnterAnswerState extends State<EnterAnswerCl> {
               10.0,
             ),
             height: 150,
-            child: Row(children: <Widget>[
-              Text(vocableList[widget.questionId][widget.questionMode],
-                  style: TextStyle(fontSize: 25, fontWeight: FontWeight.bold)),
-            ])),
+            child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: <Widget>[
+                  Text(vocableList[widget.questionId][widget.questionMode],
+                      style:
+                          TextStyle(fontSize: 25, fontWeight: FontWeight.bold)),
+                ])),
         Container(
             padding: EdgeInsets.fromLTRB(
               15.0,
@@ -1293,7 +1337,7 @@ class _EnterAnswerState extends State<EnterAnswerCl> {
                   children: <Widget>[
                     Text(
                       iscorrect + ' \n',
-                      textAlign: TextAlign.left,
+                      textAlign: TextAlign.center,
                       style: TextStyle(
                           color: textcolor,
                           fontSize: 20.0,
@@ -1306,7 +1350,7 @@ class _EnterAnswerState extends State<EnterAnswerCl> {
                     children: <Widget>[
                       Text(
                         correctanswer,
-                        textAlign: TextAlign.left,
+                        textAlign: TextAlign.center,
                         style: TextStyle(
                             fontSize: 15.0, fontWeight: FontWeight.bold),
                       ),
@@ -1338,7 +1382,7 @@ class _LearnOptions extends State<LearnOptions> {
       appBar: AppBar(
         title: Text("learning options",
             style: TextStyle(fontSize: fontSize, color: Colors.white)),
-        backgroundColor: Colors.blue,
+        backgroundColor: Colors.amber,
       ),
     );
   }

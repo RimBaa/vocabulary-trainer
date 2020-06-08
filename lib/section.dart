@@ -12,7 +12,7 @@ class _Sections extends State<Sections>{
     return Scaffold(
       appBar: AppBar(
         title: Text("sections", style: TextStyle(fontSize: fontSize, color: Colors.white)),
-        backgroundColor: Colors.blue,
+        backgroundColor: Colors.amber,
       ),
     );
   }

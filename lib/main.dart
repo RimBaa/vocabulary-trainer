@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 //import 'package:shared_preferences/shared_preferences.dart';
 //import 'package:sqflite/sqflite.dart';
-import 'package:vocabulary/drawer.dart';
+import 'package:vocabulary/section.dart';
 //import 'global_vars.dart';
 //import 'language.dart';
 import 'vocable.dart';
@@ -27,8 +27,14 @@ class VocabularyApp extends StatefulWidget {
 class VocabularyState extends State<VocabularyApp> {
   @override
   void initState() {
-    getDatabase();
     super.initState();
+    ListVocabState vocObj = new ListVocabState();
+
+    getDatabase().whenComplete(() {
+      vocObj.getVocableList().whenComplete(() {
+        setState(() {});
+      });
+    });
   }
 
   @override
@@ -36,7 +42,7 @@ class VocabularyState extends State<VocabularyApp> {
     return MaterialApp(
       title: 'vocabulary trainer',
       theme: ThemeData(
-        primarySwatch: Colors.blue,
+        primarySwatch: Colors.amber,
       ),
       home: MyHomePage(title: "vocabulary trainer"),
     );
@@ -54,18 +60,18 @@ class MyHomePage extends StatefulWidget {
 
 //home screen
 class _MyHomePageState extends State<MyHomePage> {
+  int indexScreen;
+  initState() {
+    super.initState();
+    indexScreen = 0;
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        // title: Text(widget.title),
-        actions: <Widget>[
-          Container(padding: EdgeInsets.symmetric(vertical: 15.0)),
-        ],
-      ),
-      body: _homeScreen(context),
-      drawer: createDrawer(context),
+      body: _setScreen(indexScreen, context), //_homeScreen(context),
+      //drawer: createDrawer(context),
+      bottomNavigationBar: bottomNaviBar(context),
     );
   }
 
@@ -77,7 +83,7 @@ class _MyHomePageState extends State<MyHomePage> {
           RaisedButton(
             onPressed: () async {
               ListVocabState mainScreenObj = new ListVocabState();
-               
+
               mainScreenObj.addVocable(context);
             },
             //   child: const Text("add a new  language",
@@ -91,7 +97,7 @@ class _MyHomePageState extends State<MyHomePage> {
             //   },
             child: const Text("add a vocable",
                 style: TextStyle(fontSize: 20, color: Colors.white)),
-            color: Colors.blue,
+            color: Colors.amberAccent[600],
             padding: EdgeInsets.symmetric(vertical: 30.0, horizontal: 70.0),
           ),
           RaisedButton(
@@ -101,9 +107,41 @@ class _MyHomePageState extends State<MyHomePage> {
             },
             child: const Text("start learning",
                 style: TextStyle(fontSize: 20, color: Colors.white)),
-            color: Colors.blue,
+            color: Colors.amberAccent[600],
             padding: EdgeInsets.symmetric(vertical: 30.0, horizontal: 70.0),
           )
         ]));
+  }
+
+  bottomNaviBar(context) {
+    return BottomNavigationBar(
+      selectedItemColor: Colors.amberAccent[700],
+      unselectedItemColor: Colors.amberAccent[300],
+      items: const [
+        BottomNavigationBarItem(
+            icon: Icon(Icons.home), title: Text('vocabulary')),
+        BottomNavigationBarItem(
+            icon: Icon(Icons.table_chart), title: Text('sections')),
+        BottomNavigationBarItem(
+            icon: Icon(Icons.school), title: Text('start learning'))
+      ],
+      backgroundColor: Colors.amberAccent[100],
+      onTap: (value) {
+        setState(() {
+          indexScreen = value;
+        });
+      },
+      currentIndex: indexScreen,
+    );
+  }
+
+  _setScreen(int index, context) {
+    if (index == 0) {
+      return ListVocab();
+    } else if (index == 1) {
+      return Sections();
+    } else {
+      return Learn();
+    }
   }
 }
