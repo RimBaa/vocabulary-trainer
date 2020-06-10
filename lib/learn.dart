@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'global_vars.dart';
 import 'dart:math';
@@ -27,7 +29,6 @@ class LearnState extends State<Learn> {
   String answerMode;
   String questionMode;
   bool newSession = true;
-  bool _loading;
   double progressvalue;
   int progresscounter;
   int vocablenumber;
@@ -37,7 +38,6 @@ class LearnState extends State<Learn> {
   void initState() {
     super.initState();
 
-    _loading = false;
     progressvalue = 0.0;
     progresscounter = 0;
     ListVocabState vocListObj = new ListVocabState();
@@ -51,7 +51,21 @@ class LearnState extends State<Learn> {
   //setstate from other class
   void callback() {
     setState(() {
-      Navigator.pop(context);
+      progressvalue = 0.0;
+      newSession = true;
+      progresscounter = 0;
+      correctCounter = [];
+    });
+  }
+
+  void callbackSet() {
+    setState(() {
+      if (newSession == false) {
+        print(progressvalue);
+        progressvalue += addprogress;
+        print(progressvalue);
+      }
+      newSession = false;
     });
   }
 
@@ -70,7 +84,7 @@ class LearnState extends State<Learn> {
       vocablenumber = vocableList.length;
     }
     addprogress = 1 / (3 * vocablenumber);
-
+    print('vocablenumber $vocablenumber');
     print(vocableList);
     if (vocableList != null) {
       if (vocableList.length <= 3) {
@@ -80,10 +94,6 @@ class LearnState extends State<Learn> {
             child: Text(
                 "There are not enough vocables to learn. At least 4 vocables are needed."));
       } else {
-        if (newSession == true) {
-          correctCounter = List.filled(vocableList.length, 0);
-          newSession = false;
-        }
         Random rnd = new Random();
 
         while (questionList.length < vocablenumber) {
@@ -93,7 +103,7 @@ class LearnState extends State<Learn> {
           }
         }
         questionId = questionList[0];
-        ;
+
         print(questionId);
 
         print(questionList);
@@ -112,27 +122,182 @@ class LearnState extends State<Learn> {
     }
   }
 
-// one of three learn options
+// each vocable will be learned with the 3 learning options
   learn(BuildContext context) {
     int section = vocableList[questionId]['section'];
-    Random rnd = new Random();
-    int rndOption = rnd.nextInt(section);
-    print(vocableList);
-    print("learn optin $rndOption");
 
-    //multiple choice with 4 options
-    if (vocableList[questionId]['section'] >= 1 &&
-        vocableList.length > 3 &&
-        rndOption == 0) {
-      return new MultChoiceCl(
-          questionId, answerMode, questionMode, callback, correctCounter);
-    } else if (vocableList[questionId]['section'] >= 1 && rndOption == 1) {
-      return new LettersOrder(
-          questionId, questionMode, answerMode, callback, correctCounter);
-    } else if (vocableList[questionId]['section'] == 3 && rndOption == 2) {
-      return new EnterAnswerCl(
-          questionId, questionMode, answerMode, callback, correctCounter);
+    print(newSession);
+    if (newSession == true) {
+      correctCounter = List.filled(vocableList.length, 0);
+      return new StartLearning(callbackSet);
+    } else {
+      progresscounter += 1;
+      print('progresscounter $progresscounter');
+      if (progresscounter <= vocablenumber) {
+        return new MultChoiceCl(questionList[progresscounter - 1], answerMode,
+            questionMode, callbackSet, correctCounter, progressvalue);
+      } else if (progresscounter <= vocablenumber * 2) {
+        return new LettersOrder(
+            questionList[(progresscounter - 1) ~/ 2],
+            questionMode,
+            answerMode,
+            callbackSet,
+            correctCounter,
+            progressvalue);
+      } else if (progresscounter <= vocablenumber * 3) {
+        return new EnterAnswerCl(
+            questionList[(progresscounter - 1) ~/ 3],
+            questionMode,
+            answerMode,
+            callbackSet,
+            correctCounter,
+            progressvalue);
+      } else {
+        return new EndLearn(callback);
+      }
     }
+  }
+}
+
+class StartLearning extends StatefulWidget {
+  final Function callback;
+
+  StartLearning(this.callback);
+
+  @override
+  StartLearningState createState() => StartLearningState();
+}
+Icon iconArrow = Icon(Icons.arrow_forward);
+class StartLearningState extends State<StartLearning> {
+  int iconCounter;
+  
+  @override
+  void initState() {
+    iconCounter = 0;
+    super.initState();
+    iconArrow = Icon(Icons.arrow_forward);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+        resizeToAvoidBottomInset: false,
+        appBar: AppBar(
+          title: Text("learn",
+              style: TextStyle(fontSize: fontSize, color: Colors.white)),
+          backgroundColor: Colors.amber,
+          actions: <Widget>[
+            RaisedButton(
+                color: Colors.amber,
+                child: Icon(
+                  Icons.settings,
+                  color: Colors.white,
+                ),
+                onPressed: () {
+                  _settings(context);
+                })
+          ],
+        ),
+        body: Container(
+          width: MediaQuery.of(context).size.width,
+          height: MediaQuery.of(context).size.height,
+          alignment: Alignment.center,
+          child: RaisedButton(
+              padding: EdgeInsets.all(26),
+              color: Colors.amber[400],
+              child: Text('start learning',
+                  style: TextStyle(fontSize: 25, color: Colors.white)),
+              onPressed: () {
+                widget.callback();
+              }),
+        ));
+  }
+
+  Future _settings(BuildContext context) {
+    return showDialog<String>(
+        context: context,
+        barrierDismissible: true,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.all(Radius.circular(20.0))),
+            actions: <Widget>[
+              RaisedButton(
+                  child: Text('Back'),
+                  onPressed: () {
+                    Navigator.pop(context);
+                  }),
+              RaisedButton(
+                  child: Text('Change'),
+                  onPressed: () {
+                    Navigator.pop(context);
+                  })
+            ],
+            title: Title(
+                color: Colors.amber,
+                child: Text('Settings', style: TextStyle(color: Colors.black))),
+            content: new Column(
+              mainAxisSize: MainAxisSize.min,
+              children: <Widget>[
+                Container(
+                    alignment: Alignment.topLeft, child: Text('direction:')),
+                Container(
+                    alignment: Alignment.topLeft,
+                    child:new IconButton(
+                        icon: iconArrow,
+                        onPressed: () {
+                          setState(() {
+                            print(Icon(Icons.arrow_forward));
+                            if(iconArrow == Icon(Icons.arrow_forward)){
+                              iconArrow = Icon(Icons.arrow_back);
+                            }else{
+                              iconArrow = Icon(Icons.arrow_forward);
+                            }
+                           // iconArrow = iconArrow == Icon(Icons.arrow_forward) ? Icon(Icons.arrow_back) : Icon(Icons.arrow_forward);
+                            print(iconArrow);
+                          });
+                        }))
+              ],
+            ),
+          );
+        });
+  }
+
+  
+}
+
+class EndLearn extends StatefulWidget {
+  final Function callback;
+
+  EndLearn(this.callback);
+
+  @override
+  EndLearnState createState() => EndLearnState();
+}
+
+class EndLearnState extends State<EndLearn> {
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+        resizeToAvoidBottomInset: false,
+        appBar: AppBar(
+          title: Text("learn",
+              style: TextStyle(fontSize: fontSize, color: Colors.white)),
+          backgroundColor: Colors.amber,
+        ),
+        body: Container(
+          width: MediaQuery.of(context).size.width,
+          height: MediaQuery.of(context).size.height,
+          alignment: Alignment.center,
+          child: RaisedButton(
+              padding: EdgeInsets.all(26),
+              color: Colors.amber[400],
+              child: Text('Done',
+                  style: TextStyle(fontSize: 25, color: Colors.white)),
+              onPressed: () {
+                widget.callback();
+              }),
+        ));
   }
 }
 
@@ -144,9 +309,10 @@ class MultChoiceCl extends StatefulWidget {
   final String questionMode;
   final bool answered = false;
   final List<int> correctCounter;
+  final double progressvalue;
 
   MultChoiceCl(this.questionId, this.answerMode, this.questionMode,
-      this.callback, this.correctCounter);
+      this.callback, this.correctCounter, this.progressvalue);
 
   @override
   MultChoiceState createState() => MultChoiceState(answered);
@@ -179,9 +345,9 @@ class MultChoiceState extends State<MultChoiceCl> {
             width: MediaQuery.of(context).size.width - 20,
             child: Center(
                 child: LinearProgressIndicator(
-              value: 0.5,
-              backgroundColor: Colors.amberAccent[100],
-              valueColor: AlwaysStoppedAnimation(Colors.amber),
+              value: widget.progressvalue,
+              //backgroundColor: Colors.amberAccent[100],
+              //valueColor: AlwaysStoppedAnimation(Colors.amber),
             ))),
         multipleChoice()
       ]),
@@ -191,7 +357,7 @@ class MultChoiceState extends State<MultChoiceCl> {
 // multiple choice learn option
 // after 6 correct answers section will be updated till section 3
   Widget multipleChoice() {
-    //Timer timer;
+    Timer timer;
     int section = 1;
     print(widget.correctCounter);
     if (answered == false) {
@@ -214,12 +380,12 @@ class MultChoiceState extends State<MultChoiceCl> {
       answered = false;
       print('bottom');
 
-      // timer = new Timer.periodic(
-      //     Duration(seconds: 1),
-      //     (Timer t) => setState(() {
-      //           timer.cancel();
-      //           widget.callback();
-      //         }));
+      timer = new Timer.periodic(
+          Duration(seconds: 1),
+          (Timer t) => setState(() {
+                timer.cancel();
+                widget.callback();
+              }));
     }
 
     int idPosition = multChoiceList.indexOf(widget.questionId);
@@ -258,7 +424,7 @@ class MultChoiceState extends State<MultChoiceCl> {
                         if (widget.questionId == multChoiceList[0]) {
                           dynColor[0] = Colors.greenAccent;
                           if (section < 3 &&
-                              widget.correctCounter[widget.questionId] == 5) {
+                              widget.correctCounter[widget.questionId] == 3) {
                             widget.correctCounter[widget.questionId] = 0;
                             await updateVocableTable(VocableTable(
                                 id: vocableList[widget.questionId]['id'],
@@ -274,7 +440,7 @@ class MultChoiceState extends State<MultChoiceCl> {
                           dynColor[0] = Colors.redAccent;
                           dynColor[idPosition] = Colors.greenAccent;
                         }
-                        showAnswer(multChoiceList[0]);
+
                         setState(() {
                           answered = true;
                         });
@@ -296,7 +462,7 @@ class MultChoiceState extends State<MultChoiceCl> {
                         if (widget.questionId == multChoiceList[1]) {
                           dynColor[1] = Colors.greenAccent;
                           if (section < 3 &&
-                              widget.correctCounter[widget.questionId] == 5) {
+                              widget.correctCounter[widget.questionId] == 3) {
                             widget.correctCounter[widget.questionId] = 0;
                             await updateVocableTable(VocableTable(
                                 id: vocableList[widget.questionId]['id'],
@@ -312,7 +478,7 @@ class MultChoiceState extends State<MultChoiceCl> {
                           dynColor[1] = Colors.redAccent;
                           dynColor[idPosition] = Colors.greenAccent;
                         }
-                        showAnswer(multChoiceList[1]);
+
                         setState(() {
                           answered = true;
                         });
@@ -334,7 +500,7 @@ class MultChoiceState extends State<MultChoiceCl> {
                         if (widget.questionId == multChoiceList[2]) {
                           dynColor[2] = Colors.greenAccent;
                           if (section < 3 &&
-                              widget.correctCounter[widget.questionId] == 5) {
+                              widget.correctCounter[widget.questionId] == 3) {
                             widget.correctCounter[widget.questionId] = 0;
                             await updateVocableTable(VocableTable(
                                 id: vocableList[widget.questionId]['id'],
@@ -350,7 +516,7 @@ class MultChoiceState extends State<MultChoiceCl> {
                           dynColor[2] = Colors.redAccent;
                           dynColor[idPosition] = Colors.greenAccent;
                         }
-                        showAnswer(multChoiceList[2]);
+
                         setState(() {
                           answered = true;
                         });
@@ -372,7 +538,7 @@ class MultChoiceState extends State<MultChoiceCl> {
                         if (widget.questionId == multChoiceList[3]) {
                           dynColor[3] = Colors.greenAccent;
                           if (section < 3 &&
-                              widget.correctCounter[widget.questionId] == 5) {
+                              widget.correctCounter[widget.questionId] == 3) {
                             widget.correctCounter[widget.questionId] = 0;
                             await updateVocableTable(VocableTable(
                                 id: vocableList[widget.questionId]['id'],
@@ -388,7 +554,7 @@ class MultChoiceState extends State<MultChoiceCl> {
                           dynColor[3] = Colors.redAccent;
                           dynColor[idPosition] = Colors.greenAccent;
                         }
-                        showAnswer(multChoiceList[3]);
+
                         setState(() {
                           answered = true;
                         });
@@ -399,66 +565,6 @@ class MultChoiceState extends State<MultChoiceCl> {
       ],
     );
   }
-
-// show if answer is correct, display correct answer if entered answer is wrong
-  showAnswer(int enteredAnswerId) {
-    Color textcolor = Colors.black;
-    String iscorrect = '';
-    String correctanswer = '';
-    String answer = vocableList[widget.questionId][widget.answerMode];
-
-    if (enteredAnswerId == widget.questionId) {
-      textcolor = Colors.green;
-      iscorrect = 'Correct!';
-      correctanswer = '';
-    } else {
-      textcolor = Colors.red;
-      iscorrect = 'Wrong!';
-      correctanswer =
-          vocableList[widget.questionId][widget.questionMode] + ' = $answer \n';
-    }
-    return showModalBottomSheet<void>(
-        enableDrag: false,
-        isDismissible: true,
-        context: context,
-        builder: (BuildContext context) {
-          return Container(
-            height: 170,
-            padding: const EdgeInsets.all(10.0),
-            child: Column(
-              children: <Widget>[
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  children: <Widget>[
-                    Text(
-                      iscorrect + ' \n',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                          color: textcolor,
-                          fontSize: 20.0,
-                          fontWeight: FontWeight.bold),
-                    ),
-                  ],
-                ),
-                Row(
-                    mainAxisAlignment: MainAxisAlignment.start,
-                    children: <Widget>[
-                      Text(
-                        correctanswer,
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                            fontSize: 15.0, fontWeight: FontWeight.bold),
-                      ),
-                    ]),
-                RaisedButton(
-                  onPressed: widget.callback,
-                  child: Text('Next'),
-                )
-              ],
-            ),
-          );
-        });
-  }
 }
 
 class LettersOrder extends StatefulWidget {
@@ -468,8 +574,10 @@ class LettersOrder extends StatefulWidget {
   final String questionMode;
   final bool answered = false;
   final List<int> correctCounter;
+  final double progressvalue;
+
   LettersOrder(this.questionId, this.answerMode, this.questionMode,
-      this.callback, this.correctCounter);
+      this.callback, this.correctCounter, this.progressvalue);
 
   @override
   LettersOrderState createState() => LettersOrderState(answered);
@@ -477,37 +585,55 @@ class LettersOrder extends StatefulWidget {
 
 class LettersOrderState extends State<LettersOrder> {
   bool answered;
-  LettersOrderState(this.answered);
-  // bool answered = false;
-
+  Color answerColor;
+  String correctanswer;
   List<String> lettersList;
   String answerStr;
-
   bool isKorean = false;
 
-//LettersOrderState(int questionId, String answerMode, String questionMode, bool answered);
+  LettersOrderState(this.answered);
+
+  @override
+  void initState() {
+    super.initState();
+    answerColor = Colors.grey[100];
+    correctanswer = '';
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      resizeToAvoidBottomInset: false,
-      appBar: AppBar(
-        title: Text("learn",
-            style: TextStyle(fontSize: fontSize, color: Colors.white)),
-        backgroundColor: Colors.amber,
-      ),
-      body: letterOrder(),
-    );
+        resizeToAvoidBottomInset: false,
+        appBar: AppBar(
+          title: Text("learn",
+              style: TextStyle(fontSize: fontSize, color: Colors.white)),
+          backgroundColor: Colors.amber,
+        ),
+        body: SingleChildScrollView(
+            child: Column(
+          children: [
+            Container(
+                height: 50,
+                width: MediaQuery.of(context).size.width - 20,
+                child: Center(
+                    child: LinearProgressIndicator(
+                  value: widget.progressvalue,
+                ))),
+            letterOrder()
+          ],
+        )));
   }
 
   //LetterOrder
   Widget letterOrder() {
     String answer = vocableList[widget.questionId][widget.answerMode];
+    Timer timer;
 
     print(widget.correctCounter);
     if (answered == false) {
       lettersList = [];
-
+      answerColor = Colors.grey[300];
+      correctanswer = '';
 //hangul syllable block
       // if (answer.codeUnitAt(0) > 44032) {
       //   isKorean = true;
@@ -515,7 +641,7 @@ class LettersOrderState extends State<LettersOrder> {
       // }
       //latin character
       // else {
-      isKorean = false;
+      // isKorean = false;
       lettersList = answer.split('');
       // }
 
@@ -525,21 +651,23 @@ class LettersOrderState extends State<LettersOrder> {
       }
       answerStr = "";
     }
-    print(lettersList);
-    for (var item in lettersList) {
-      print(item.codeUnits);
+
+    if (answered == true && lettersList.length == 0) {
+      answered = false;
+      print('bottom');
+
+      timer = new Timer.periodic(
+          Duration(seconds: 2),
+          (Timer t) => setState(() {
+                timer.cancel();
+                widget.callback();
+              }));
     }
 
     return Column(
       children: <Widget>[
         Container(
-            padding: EdgeInsets.fromLTRB(
-              15.0,
-              50.0,
-              15.0,
-              10.0,
-            ),
-            height: 150,
+            height: MediaQuery.of(context).size.height * 0.3,
             child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: <Widget>[
@@ -548,16 +676,20 @@ class LettersOrderState extends State<LettersOrder> {
                           TextStyle(fontSize: 25, fontWeight: FontWeight.bold)),
                 ])),
         Container(
-            width: 300,
-            padding: EdgeInsets.fromLTRB(
-              15.0,
-              50.0,
-              15.0,
-              10.0,
-            ),
-            decoration: const BoxDecoration(
-                border: Border(bottom: BorderSide(width: 1.0))),
+            child: Text(correctanswer,
+                style: TextStyle(
+                    fontSize: 25,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.green))),
+        Container(
+            padding:
+                EdgeInsets.only(top: MediaQuery.of(context).size.height * 0.05),
+            width: MediaQuery.of(context).size.width * 0.7,
+            decoration: BoxDecoration(
+                border:
+                    Border(bottom: BorderSide(width: 3.0, color: answerColor))),
             child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
               children: <Widget>[
                 Text(answerStr,
                     style:
@@ -565,12 +697,8 @@ class LettersOrderState extends State<LettersOrder> {
               ],
             )),
         Container(
-            padding: EdgeInsets.fromLTRB(
-              15.0,
-              150.0,
-              15.0,
-              100.0,
-            ),
+            padding:
+                EdgeInsets.only(top: MediaQuery.of(context).size.height * 0.2),
             child: Wrap(
                 spacing: 6.0,
                 runSpacing: 6.0,
@@ -586,22 +714,10 @@ class LettersOrderState extends State<LettersOrder> {
                             answered = true;
 
                             if (lettersList.length == 0 && answered == true) {
-                              // if (isKorean) {
-                              //   answerStr = getSyllable(answerStr);
-                              // }
-                              print(answerStr);
-                              print(answerStr.codeUnits);
-                              print(answer.codeUnits);
-                              print('donneee');
-                              print(vocableList[widget.questionId]
-                                  [widget.answerMode]);
-                              print(answerStr ==
-                                  vocableList[widget.questionId]
-                                      [widget.answerMode]);
-
                               if (answerStr ==
                                   vocableList[widget.questionId]
                                       [widget.answerMode]) {
+                                answerColor = Colors.green;
                                 if (vocableList[widget.questionId]['section'] <
                                         3 &&
                                     widget.correctCounter[widget.questionId] ==
@@ -622,13 +738,12 @@ class LettersOrderState extends State<LettersOrder> {
                                       widget.correctCounter[widget.questionId] +
                                           1;
                                 }
+                              } else {
+                                answerColor = Colors.red;
+                                correctanswer = answer;
                               }
-                              showAnswer();
-
-                              setState(() {});
-                            } else {
-                              setState(() {});
                             }
+                            setState(() {});
                           },
                         ))))
       ],
@@ -1222,20 +1337,28 @@ class EnterAnswerCl extends StatefulWidget {
   final String answerMode;
   final String questionMode;
   final List<int> correctCounter;
+  final double progressvalue;
 
   EnterAnswerCl(this.questionId, this.answerMode, this.questionMode,
-      this.callback, this.correctCounter);
+      this.callback, this.correctCounter, this.progressvalue);
 
   @override
-  _EnterAnswerState createState() => _EnterAnswerState();
+  EnterAnswerState createState() => EnterAnswerState();
 }
 
-class _EnterAnswerState extends State<EnterAnswerCl> {
+class EnterAnswerState extends State<EnterAnswerCl> {
   TextEditingController _controller;
+  bool answered;
+  Timer timer;
+  String correctanswer;
+  Color answerColor;
 
   initState() {
     super.initState();
+    answered = false;
     _controller = TextEditingController();
+    correctanswer = '';
+    answerColor = Colors.grey[300];
   }
 
   void dispose() {
@@ -1245,27 +1368,47 @@ class _EnterAnswerState extends State<EnterAnswerCl> {
 
   Widget build(BuildContext context) {
     return Scaffold(
-      resizeToAvoidBottomInset: false,
-      appBar: AppBar(
-        title: Text("learn",
-            style: TextStyle(fontSize: fontSize, color: Colors.white)),
-        backgroundColor: Colors.amber,
-      ),
-      body: enterAnswer(),
-    );
+        resizeToAvoidBottomInset: false,
+        appBar: AppBar(
+          title: Text("learn",
+              style: TextStyle(fontSize: fontSize, color: Colors.white)),
+          backgroundColor: Colors.amber,
+        ),
+        body: SingleChildScrollView(
+            child: Column(
+          children: [
+            Container(
+                height: 50,
+                width: MediaQuery.of(context).size.width - 20,
+                child: Center(
+                    child: LinearProgressIndicator(
+                  value: widget.progressvalue,
+                ))),
+            enterAnswer()
+          ],
+        )));
   }
 
   Widget enterAnswer() {
+    if (answered == false) {
+      _controller.clear();
+      correctanswer = '';
+      answerColor = Colors.grey[300];
+    } else {
+      print('bottom');
+      answered = false;
+
+      timer = new Timer.periodic(
+          Duration(seconds: 2),
+          (Timer t) => setState(() {
+                timer.cancel();
+                widget.callback();
+              }));
+    }
     return Column(
       children: <Widget>[
         Container(
-            padding: EdgeInsets.fromLTRB(
-              15.0,
-              50.0,
-              15.0,
-              10.0,
-            ),
-            height: 150,
+            height: MediaQuery.of(context).size.height * 0.3,
             child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: <Widget>[
@@ -1274,116 +1417,36 @@ class _EnterAnswerState extends State<EnterAnswerCl> {
                           TextStyle(fontSize: 25, fontWeight: FontWeight.bold)),
                 ])),
         Container(
-            padding: EdgeInsets.fromLTRB(
-              15.0,
-              50.0,
-              15.0,
-              10.0,
-            ),
-            height: 150,
+            child: Text(correctanswer,
+                style: TextStyle(
+                    fontSize: 25,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.green))),
+        Container(
+            padding:
+                EdgeInsets.only(top: MediaQuery.of(context).size.height * 0.05),
+            width: MediaQuery.of(context).size.width * 0.7,
             child: TextField(
-              decoration: InputDecoration(labelText: 'Enter translation'),
+              decoration: InputDecoration(
+                  enabledBorder: OutlineInputBorder(
+                      borderSide: BorderSide(width: 3.0, color: answerColor)),
+                  labelText: 'Enter translation'),
               controller: _controller,
               onSubmitted: (String value) {
-                showAnswer(value);
+                answered = true;
+
+                if (value ==
+                    vocableList[widget.questionId][widget.answerMode]) {
+                  answerColor = Colors.green;
+                } else {
+                  correctanswer =
+                      vocableList[widget.questionId][widget.answerMode];
+                  answerColor = Colors.red;
+                }
+                setState(() {});
               },
             ))
       ],
-    );
-  }
-
-  // show if answer is correct, display correct answer if entered answer is wrong
-  showAnswer(String answerStr) async {
-    Color textcolor = Colors.black;
-    String iscorrect = '';
-    String correctanswer = '';
-    String answer = vocableList[widget.questionId][widget.answerMode];
-    print(widget.correctCounter);
-    if (answerStr == vocableList[widget.questionId][widget.answerMode]) {
-      textcolor = Colors.green;
-      iscorrect = 'Correct!';
-      correctanswer = '';
-
-      if (vocableList[widget.questionId]['section'] < 3 &&
-          widget.correctCounter[widget.questionId] == 5) {
-        widget.correctCounter[widget.questionId] = 0;
-        await updateVocableTable(VocableTable(
-            id: vocableList[widget.questionId]['id'],
-            section: vocableList[widget.questionId]['section'] + 1,
-            translation: vocableList[widget.questionId]['translation'],
-            word: vocableList[widget.questionId]['word']));
-      } else {
-        widget.correctCounter[widget.questionId] =
-            widget.correctCounter[widget.questionId] + 1;
-      }
-    } else {
-      textcolor = Colors.red;
-      iscorrect = 'Wrong!';
-      correctanswer =
-          vocableList[widget.questionId][widget.questionMode] + ' = $answer \n';
-    }
-    return showModalBottomSheet<void>(
-        enableDrag: false,
-        isDismissible: true,
-        context: context,
-        builder: (BuildContext context) {
-          return Container(
-            height: 170,
-            padding: const EdgeInsets.all(10.0),
-            child: Column(
-              children: <Widget>[
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  children: <Widget>[
-                    Text(
-                      iscorrect + ' \n',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                          color: textcolor,
-                          fontSize: 20.0,
-                          fontWeight: FontWeight.bold),
-                    ),
-                  ],
-                ),
-                Row(
-                    mainAxisAlignment: MainAxisAlignment.start,
-                    children: <Widget>[
-                      Text(
-                        correctanswer,
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                            fontSize: 15.0, fontWeight: FontWeight.bold),
-                      ),
-                    ]),
-                RaisedButton(
-                  onPressed: () {
-                    _controller.clear();
-                    widget.callback();
-                  },
-                  child: Text('Next'),
-                )
-              ],
-            ),
-          );
-        });
-  }
-}
-
-//learn options
-class LearnOptions extends StatefulWidget {
-  @override
-  _LearnOptions createState() => _LearnOptions();
-}
-
-class _LearnOptions extends State<LearnOptions> {
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text("learning options",
-            style: TextStyle(fontSize: fontSize, color: Colors.white)),
-        backgroundColor: Colors.amber,
-      ),
     );
   }
 }

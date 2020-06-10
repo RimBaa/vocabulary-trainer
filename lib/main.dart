@@ -123,7 +123,7 @@ class _MyHomePageState extends State<MyHomePage> {
         BottomNavigationBarItem(
             icon: Icon(Icons.table_chart), title: Text('sections')),
         BottomNavigationBarItem(
-            icon: Icon(Icons.school), title: Text('start learning'))
+            icon: Icon(Icons.school), title: Text('learn'))
       ],
       backgroundColor: Colors.amberAccent[100],
       onTap: (value) {

@@ -49,14 +49,7 @@ createDrawer(context) {
                 context, MaterialPageRoute(builder: (context) => Sections()));
           },
         ),
-        ListTile(
-          contentPadding: EdgeInsets.fromLTRB(10.0, 10.0, 10.0, 10.0),
-          title: Text(settings[3], style: TextStyle(fontSize: fontSize)),
-          onTap: () {
-            Navigator.push(context,
-                MaterialPageRoute(builder: (context) => LearnOptions()));
-          },
-        ),
+       
       ],
     ),
   );
