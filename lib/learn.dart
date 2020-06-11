@@ -1,5 +1,5 @@
 import 'dart:async';
-
+import 'package:flutter_tts/flutter_tts.dart';
 import 'package:flutter/material.dart';
 import 'global_vars.dart';
 import 'dart:math';
@@ -33,11 +33,12 @@ class LearnState extends State<Learn> {
   int progresscounter;
   int vocablenumber;
   double addprogress;
+  int counter;
 
   @override
   void initState() {
     super.initState();
-
+    counter = -1;
     progressvalue = 0.0;
     progresscounter = 0;
     ListVocabState vocListObj = new ListVocabState();
@@ -119,43 +120,60 @@ class LearnState extends State<Learn> {
 
         return learn(context);
       }
+    } else {
+      return new Container(
+          width: 150, height: 150, child: Text("An error has occured."));
     }
   }
 
 // each vocable will be learned with the 3 learning options
   learn(BuildContext context) {
-    int section = vocableList[questionId]['section'];
-
+    print(counter);
     print(newSession);
     if (newSession == true) {
+      counter = -1;
       correctCounter = List.filled(vocableList.length, 0);
       return new StartLearning(callbackSet);
     } else {
       progresscounter += 1;
       print('progresscounter $progresscounter');
       if (progresscounter <= vocablenumber) {
-        return new MultChoiceCl(questionList[progresscounter - 1], answerMode,
-            questionMode, callbackSet, correctCounter, progressvalue);
+        counter += 1;
+        return new MultChoiceCl(questionList[counter], answerMode, questionMode,
+            callbackSet, correctCounter, progressvalue);
       } else if (progresscounter <= vocablenumber * 2) {
-        return new LettersOrder(
-            questionList[(progresscounter - 1) ~/ 2],
-            questionMode,
-            answerMode,
-            callbackSet,
-            correctCounter,
-            progressvalue);
+        if (counter == vocablenumber - 1) {
+          counter = -1;
+        }
+        counter += 1;
+        return new LettersOrder(questionList[counter], questionMode, answerMode,
+            callbackSet, correctCounter, progressvalue);
       } else if (progresscounter <= vocablenumber * 3) {
-        return new EnterAnswerCl(
-            questionList[(progresscounter - 1) ~/ 3],
-            questionMode,
-            answerMode,
-            callbackSet,
-            correctCounter,
-            progressvalue);
+        if (counter == vocablenumber - 1) {
+          counter = -1;
+        }
+        counter += 1;
+        return new EnterAnswerCl(questionList[counter], 'translation', 'word',
+            callbackSet, correctCounter, progressvalue);
       } else {
-        return new EndLearn(callback);
+        List<int> overviewAns = countCorrectAns();
+
+        return new EndLearn(callback, overviewAns);
       }
     }
+  }
+
+  List<int> countCorrectAns() {
+    int counterPos = 0;
+    int counterWrong = 0;
+
+    for (var i = 0; i < correctCounter.length; i++) {
+      counterPos += correctCounter[i];
+    }
+    print(counterPos);
+
+    counterWrong = vocablenumber * 3 - counterPos;
+    return [counterPos, counterWrong];
   }
 }
 
@@ -167,10 +185,12 @@ class StartLearning extends StatefulWidget {
   @override
   StartLearningState createState() => StartLearningState();
 }
+
 Icon iconArrow = Icon(Icons.arrow_forward);
+
 class StartLearningState extends State<StartLearning> {
   int iconCounter;
-  
+
   @override
   void initState() {
     iconCounter = 0;
@@ -243,17 +263,17 @@ class StartLearningState extends State<StartLearning> {
                     alignment: Alignment.topLeft, child: Text('direction:')),
                 Container(
                     alignment: Alignment.topLeft,
-                    child:new IconButton(
+                    child: new IconButton(
                         icon: iconArrow,
                         onPressed: () {
                           setState(() {
                             print(Icon(Icons.arrow_forward));
-                            if(iconArrow == Icon(Icons.arrow_forward)){
+                            if (iconArrow == Icon(Icons.arrow_forward)) {
                               iconArrow = Icon(Icons.arrow_back);
-                            }else{
+                            } else {
                               iconArrow = Icon(Icons.arrow_forward);
                             }
-                           // iconArrow = iconArrow == Icon(Icons.arrow_forward) ? Icon(Icons.arrow_back) : Icon(Icons.arrow_forward);
+                            // iconArrow = iconArrow == Icon(Icons.arrow_forward) ? Icon(Icons.arrow_back) : Icon(Icons.arrow_forward);
                             print(iconArrow);
                           });
                         }))
@@ -262,14 +282,13 @@ class StartLearningState extends State<StartLearning> {
           );
         });
   }
-
-  
 }
 
 class EndLearn extends StatefulWidget {
   final Function callback;
+  final List<int> counterAns;
 
-  EndLearn(this.callback);
+  EndLearn(this.callback, this.counterAns);
 
   @override
   EndLearnState createState() => EndLearnState();
@@ -278,6 +297,9 @@ class EndLearn extends StatefulWidget {
 class EndLearnState extends State<EndLearn> {
   @override
   Widget build(BuildContext context) {
+    int correctAns = widget.counterAns[0];
+    int wrongAns = widget.counterAns[1];
+
     return Scaffold(
         resizeToAvoidBottomInset: false,
         appBar: AppBar(
@@ -286,18 +308,31 @@ class EndLearnState extends State<EndLearn> {
           backgroundColor: Colors.amber,
         ),
         body: Container(
-          width: MediaQuery.of(context).size.width,
-          height: MediaQuery.of(context).size.height,
-          alignment: Alignment.center,
-          child: RaisedButton(
-              padding: EdgeInsets.all(26),
-              color: Colors.amber[400],
-              child: Text('Done',
-                  style: TextStyle(fontSize: 25, color: Colors.white)),
-              onPressed: () {
-                widget.callback();
-              }),
-        ));
+            width: MediaQuery.of(context).size.width,
+            height: MediaQuery.of(context).size.height,
+            alignment: Alignment.center,
+            child: Column(children: <Widget>[
+              Container(
+                  padding: EdgeInsets.only(
+                      top: MediaQuery.of(context).size.height * 0.3),
+                  child: Text(
+                    'correct answers: $correctAns',
+                    style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
+                  )),
+              Container(
+                  padding: EdgeInsets.only(bottom: 30.0),
+                  child: Text('wrongs answers: $wrongAns',
+                      style: TextStyle(
+                          fontSize: 15, fontWeight: FontWeight.bold))),
+              RaisedButton(
+                  padding: EdgeInsets.all(10),
+                  color: Colors.amber[400],
+                  child: Text('Done',
+                      style: TextStyle(fontSize: 20, color: Colors.white)),
+                  onPressed: () {
+                    widget.callback();
+                  })
+            ])));
   }
 }
 
@@ -379,9 +414,9 @@ class MultChoiceState extends State<MultChoiceCl> {
     } else {
       answered = false;
       print('bottom');
-
+      speakWord(vocableList[widget.questionId]['translation']);
       timer = new Timer.periodic(
-          Duration(seconds: 1),
+          Duration(seconds: 2),
           (Timer t) => setState(() {
                 timer.cancel();
                 widget.callback();
@@ -565,6 +600,13 @@ class MultChoiceState extends State<MultChoiceCl> {
       ],
     );
   }
+
+  speakWord(String word) async {
+    FlutterTts flutterTts = FlutterTts();
+    flutterTts.setLanguage('ko');
+    flutterTts.setPitch(1.0);
+    await flutterTts.speak(word);
+  }
 }
 
 class LettersOrder extends StatefulWidget {
@@ -655,7 +697,7 @@ class LettersOrderState extends State<LettersOrder> {
     if (answered == true && lettersList.length == 0) {
       answered = false;
       print('bottom');
-
+      speakWord(vocableList[widget.questionId]['translation']);
       timer = new Timer.periodic(
           Duration(seconds: 2),
           (Timer t) => setState(() {
@@ -748,6 +790,13 @@ class LettersOrderState extends State<LettersOrder> {
                         ))))
       ],
     );
+  }
+
+  speakWord(String word) async {
+    FlutterTts flutterTts = FlutterTts();
+    flutterTts.setLanguage('ko');
+    flutterTts.setPitch(1.0);
+    await flutterTts.speak(word);
   }
 
 // get hangul character list
@@ -1113,7 +1162,6 @@ class LettersOrderState extends State<LettersOrder> {
 //             newblock = false;
 //             print(unicodeBlock);
 //           }
-//           //TODO: else is missing
 //         }
 // // vc
 //         else if (previousval >= 4449 && previousval < 4470) {
@@ -1397,7 +1445,7 @@ class EnterAnswerState extends State<EnterAnswerCl> {
     } else {
       print('bottom');
       answered = false;
-
+      speakWord(vocableList[widget.questionId]['translation']);
       timer = new Timer.periodic(
           Duration(seconds: 2),
           (Timer t) => setState(() {
@@ -1448,5 +1496,12 @@ class EnterAnswerState extends State<EnterAnswerCl> {
             ))
       ],
     );
+  }
+
+  speakWord(String word) async {
+    FlutterTts flutterTts = FlutterTts();
+    flutterTts.setLanguage('ko');
+    flutterTts.setPitch(1.0);
+    await flutterTts.speak(word);
   }
 }

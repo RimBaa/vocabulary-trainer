@@ -37,7 +37,26 @@ class ListVocabState extends State<ListVocab> {
       bottomNavigationBar: BottomAppBar(
         child: _addRowDel(deleteBool),
       ),
-      floatingActionButton: FloatingActionButton(child: Icon(Icons.add),backgroundColor:Colors.amber,onPressed: (){}),
+      floatingActionButton: FloatingActionButton(
+          child: Icon(Icons.add),
+          backgroundColor: Colors.amber,
+          onPressed: () async {
+            // await addVocable(context).whenComplete(() async {
+            //   await getVocableList().whenComplete(() {
+            //     // setState(() {
+            //        deleteBool = false;
+            //     //   print("init");
+            //     // });
+            //   });
+            // });  
+            await addVocable(context);
+          await getVocableList();
+        //  deleteBool = false;
+       
+       
+        setState(() {});
+            
+          }),
     );
   }
 
@@ -96,6 +115,10 @@ class ListVocabState extends State<ListVocab> {
               ),
             );
           });
+    }
+    {
+      return new Container(
+          width: 150, height: 150, child: Text("An error has occuried."));
     }
   }
 
