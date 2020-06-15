@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_tts/flutter_tts.dart';
 import 'package:vocabulary/global_vars.dart';
 import 'dart:async';
 import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart';
+import 'package:flutter_slidable/flutter_slidable.dart';
 //import 'language.dart';
 
 // page with list of vocables
@@ -33,11 +35,21 @@ class ListVocabState extends State<ListVocab> {
           selectPopupMenu(context, deleteBool),
         ],
       ),
-      body: voclist(context),
+      body: Column(children: [
+        editScreen(context),
+        new Expanded(child: voclist(context))
+      ]),
+      // body: voclist(context),
       bottomNavigationBar: BottomAppBar(
         child: _addRowDel(deleteBool),
       ),
-      floatingActionButton: FloatingActionButton(
+      floatingActionButton: addButton(context, deleteBool),
+    );
+  }
+
+  addButton(BuildContext context, bool delete) {
+    if (delete == false) {
+      return FloatingActionButton(
           child: Icon(Icons.add),
           backgroundColor: Colors.amber,
           onPressed: () async {
@@ -48,16 +60,17 @@ class ListVocabState extends State<ListVocab> {
             //     //   print("init");
             //     // });
             //   });
-            // });  
-            await addVocable(context);
-          await getVocableList();
-        //  deleteBool = false;
-       
-       
-        setState(() {});
-            
-          }),
-    );
+            // });
+            await addVocable(context).whenComplete(() async {
+              await getVocableList();
+            });
+
+            //  deleteBool = false;
+            setState(() {});
+          });
+    } else {
+      return Container();
+    }
   }
 
   selectPopupMenu(BuildContext context, bool delete) {
@@ -91,6 +104,8 @@ class ListVocabState extends State<ListVocab> {
 
 // create vocable list
   Widget voclist(context) {
+    SlidableController _slideControl;
+
     print(vocableList);
     if (vocableList != null) {
       return ListView.builder(
@@ -98,28 +113,64 @@ class ListVocabState extends State<ListVocab> {
           itemCount: vocableList.length,
           shrinkWrap: true,
           itemBuilder: (context, index) {
-            return Card(
-              child: InkWell(
-                child: Container(
-                  height: 70,
-                  child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                      children: withOrWithoutCheckbox(deleteBool, index)),
-                ),
-                onTap: () async {
-                  print(index);
-                  await editVoc(context, index);
-                  await getVocableList();
-                  setState(() {});
-                },
-              ),
-            );
+            return new Slidable(
+                controller: _slideControl,
+                secondaryActions: <Widget>[
+                  IconSlideAction(
+                      color: Colors.grey[350],
+                      caption: 'Edit',
+                      icon: Icons.edit,
+                      onTap: () async {
+                        await editVoc(context, index);
+                        await getVocableList();
+                        setState(() {});
+                      }),
+                  IconSlideAction(
+                    color: Colors.red,
+                    caption: 'Delete',
+                    icon: Icons.delete,
+                    onTap: () async {
+                      await deleteVocableTable(vocableList[index]['id']);
+                      await getVocableList();
+                      setState(() {});
+                    },
+                  )
+                ],
+                actionPane: SlidableDrawerActionPane(),
+                child: Card(
+                  child: InkWell(
+                    child: Container(
+                      height: 70,
+                      child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                          children: withOrWithoutCheckbox(deleteBool, index)),
+                    ),
+                    onTap: () {
+                      print(index);
+                      speakWord(vocableList[index]['translation']);
+                      // setState(() async {
+                      //   await editVoc(context, index);
+                      //   await getVocableList();
+                      // });
+                    },
+                  ),
+                ));
           });
     }
     {
-      return new Container(
-          width: 150, height: 150, child: Text("An error has occuried."));
+      return new Container();
     }
+  }
+
+  speakWord(String word) async {
+    FlutterTts flutterTts = FlutterTts();
+    flutterTts.setLanguage('ko');
+    flutterTts.setPitch(1.0);
+    await flutterTts.speak(word);
+  }
+
+  Widget editScreen(BuildContext context) {
+    return Container();
   }
 
 // adding checkbox for deleting vocables if delete has been pressed
@@ -128,8 +179,12 @@ class ListVocabState extends State<ListVocab> {
       return (<Widget>[
         Container(
             width: 50,
-            child: Text(vocableList[index]['word'],
-                style: TextStyle(fontSize: 18))),
+            child:
+                Column(mainAxisAlignment: MainAxisAlignment.center, children: [
+              Text(vocableList[index]['word'], style: TextStyle(fontSize: 18)),
+              Text(vocableList[index]['wordNote'],
+                  style: TextStyle(fontSize: 11, color: Colors.grey))
+            ])),
         Container(
             width: 10,
             margin: EdgeInsets.symmetric(vertical: 10.0),
@@ -139,8 +194,13 @@ class ListVocabState extends State<ListVocab> {
             )),
         Container(
             width: 50,
-            child: Text(vocableList[index]['translation'],
-                style: TextStyle(fontSize: 18)))
+            child:
+                Column(mainAxisAlignment: MainAxisAlignment.center, children: [
+              Text(vocableList[index]['translation'],
+                  style: TextStyle(fontSize: 18)),
+              Text(vocableList[index]['translationNote'],
+                  style: TextStyle(fontSize: 11, color: Colors.grey))
+            ]))
       ]);
     } else {
       if (select2del.length != vocableList.length) {
@@ -150,8 +210,14 @@ class ListVocabState extends State<ListVocab> {
         return (<Widget>[
           Container(
               width: 50,
-              child: Text(vocableList[index]['word'],
-                  style: TextStyle(fontSize: 18))),
+              child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(vocableList[index]['word'],
+                        style: TextStyle(fontSize: 18)),
+                    Text(vocableList[index]['wordNote'],
+                        style: TextStyle(fontSize: 11, color: Colors.grey))
+                  ])),
           Container(
               width: 10,
               margin: EdgeInsets.symmetric(vertical: 10.0),
@@ -161,8 +227,14 @@ class ListVocabState extends State<ListVocab> {
               )),
           Container(
               width: 50,
-              child: Text(vocableList[index]['translation'],
-                  style: TextStyle(fontSize: 18))),
+              child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(vocableList[index]['translation'],
+                        style: TextStyle(fontSize: 18)),
+                    Text(vocableList[index]['translationNote'],
+                        style: TextStyle(fontSize: 11, color: Colors.grey))
+                  ])),
           Container(
               width: 20,
               child: IconButton(
@@ -209,7 +281,7 @@ class ListVocabState extends State<ListVocab> {
                 }
                 deleteBool = false;
                 select2del = [];
-                //    await getVocableList();
+                await getVocableList();
                 setState(() {});
               },
               child: Text("delete"))
@@ -223,40 +295,58 @@ class ListVocabState extends State<ListVocab> {
   Future<String> addVocable(BuildContext context) async {
     String word = '';
     String translation = '';
+    String wordNote = '';
+    String translationNote = '';
 
     return showDialog<String>(
         context: context,
         barrierDismissible: true,
         builder: (BuildContext context) {
           return AlertDialog(
+            shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.all(Radius.circular(10.0))),
             title: Text('Enter a new vocable'),
-            content: new Column(
+            content: SingleChildScrollView(
+                child: new Column(
               mainAxisSize: MainAxisSize.min,
               children: <Widget>[
-                new Expanded(
-                    child: new TextField(
+                new TextField(
                   autofocus: true,
                   decoration: new InputDecoration(labelText: 'word'),
                   onChanged: (value) {
                     word = value;
                   },
-                )),
-                new Expanded(
-                    child: new TextField(
+                ),
+                new TextField(
+                  autofocus: true,
+                  decoration: new InputDecoration(labelText: 'note'),
+                  onChanged: (value) {
+                    wordNote = value;
+                  },
+                ),
+                new TextField(
                   autofocus: true,
                   decoration: new InputDecoration(labelText: 'translation'),
                   onChanged: (value) {
                     translation = value;
                   },
-                ))
+                ),
+                new TextField(
+                  autofocus: true,
+                  decoration: new InputDecoration(labelText: 'note'),
+                  onChanged: (value) {
+                    translationNote = value;
+                  },
+                )
               ],
-            ),
+            )),
             actions: <Widget>[
               FlatButton(
                 child: Text('Ok'),
                 onPressed: () async {
+                  await addVoc2Table(
+                      word, wordNote, translation, translationNote);
                   Navigator.of(context).pop(word);
-                  await addVoc2Table(word, translation);
                 },
               )
             ],
@@ -267,18 +357,22 @@ class ListVocabState extends State<ListVocab> {
   Future<String> editVoc(BuildContext context, int index) async {
     String word = vocableList[index]['word'];
     String translation = vocableList[index]['translation'];
+    String wordNote = vocableList[index]['wordNote'];
+    String translationNote = vocableList[index]['translationNote'];
 
     return showDialog<String>(
         context: context,
         barrierDismissible: true,
         builder: (BuildContext context) {
           return AlertDialog(
+            shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.all(Radius.circular(10.0))),
             title: Text('Edit a vocable'),
-            content: new Column(
+            content: SingleChildScrollView(
+                child: new Column(
               mainAxisSize: MainAxisSize.min,
               children: <Widget>[
-                new Expanded(
-                    child: new TextField(
+                new TextField(
                   controller: new TextEditingController(
                       text: vocableList[index]['word']),
                   autofocus: true,
@@ -286,9 +380,17 @@ class ListVocabState extends State<ListVocab> {
                   onChanged: (value) {
                     word = value;
                   },
-                )),
-                new Expanded(
-                    child: new TextField(
+                ),
+                new TextField(
+                  controller: new TextEditingController(
+                      text: vocableList[index]['wordNote']),
+                  autofocus: true,
+                  decoration: new InputDecoration(labelText: 'note'),
+                  onChanged: (value) {
+                    wordNote = value;
+                  },
+                ),
+                new TextField(
                   controller: new TextEditingController(
                       text: vocableList[index]['translation']),
                   autofocus: true,
@@ -296,9 +398,18 @@ class ListVocabState extends State<ListVocab> {
                   onChanged: (value) {
                     translation = value;
                   },
-                ))
+                ),
+                new TextField(
+                  controller: new TextEditingController(
+                      text: vocableList[index]['translationNote']),
+                  autofocus: true,
+                  decoration: new InputDecoration(labelText: 'note'),
+                  onChanged: (value) {
+                    translationNote = value;
+                  },
+                )
               ],
-            ),
+            )),
             actions: <Widget>[
               FlatButton(
                 child: Text('Ok'),
@@ -307,7 +418,9 @@ class ListVocabState extends State<ListVocab> {
                   await updateVocableTable(VocableTable(
                       id: vocableList[index]['id'],
                       word: word,
+                      wordNote: wordNote,
                       translation: translation,
+                      translationNote: translationNote,
                       section: vocableList[index]['section']));
                   // await getVocableList();
                 },
@@ -318,7 +431,7 @@ class ListVocabState extends State<ListVocab> {
   }
 
 //adding vocable to the databases
-  addVoc2Table(vocab, transl) async {
+  addVoc2Table(vocab, vocabNote, transl, translNote) async {
     int index = 0;
     int largestId;
     bool indexChosen = false;
@@ -342,8 +455,13 @@ class ListVocabState extends State<ListVocab> {
       print(largestId);
     }
 
-    var voc =
-        VocableTable(id: index, word: vocab, translation: transl, section: 1);
+    var voc = VocableTable(
+        id: index,
+        word: vocab,
+        wordNote: vocabNote,
+        translation: transl,
+        translationNote: translNote,
+        section: 1);
 
     await insertVocable(voc);
   }
@@ -392,7 +510,9 @@ Future<List<VocableTable>> vocable() async {
     return VocableTable(
         id: maps[i]['id'],
         word: maps[i]['word'],
+        wordNote: maps[i]['wordNote'],
         translation: maps[i]['translation'],
+        translationNote: maps[i]['translationNote'],
         section: maps[i]['section']);
   });
 }
@@ -418,7 +538,7 @@ getDatabase() async {
   database = openDatabase(join(await getDatabasesPath(), databasename),
       onCreate: (db, version) {
     return db.execute(
-        "CREATE TABLE $dbName(id INTEGER PRIMARY KEY, word TEXT, translation TEXT, section INTEGER)");
+        "CREATE TABLE $dbName(id INTEGER PRIMARY KEY, word TEXT, wordNote TEXT, translation TEXT, translationNote TEXT, section INTEGER)");
   }, version: 1);
 }
 
@@ -426,29 +546,39 @@ class VocableTable {
   final int id;
   final String word;
   final String translation;
+  final String wordNote;
+  final String translationNote;
   final int section;
 
-  VocableTable({this.id, this.word, this.translation, this.section});
+  VocableTable(
+      {this.id,
+      this.word,
+      this.wordNote,
+      this.translation,
+      this.translationNote,
+      this.section});
 
   Map<String, dynamic> toMap() {
     return {
       'id': id,
       'word': word,
+      'wordnote': wordNote,
       'translation': translation,
+      'translationnote': translationNote,
       'section': section
     };
   }
 
   @override
   String toString() {
-    return '[$id, $word, $translation, $section]';
+    return '[$id, $word, $wordNote, $translation, $translationNote, $section]';
   }
 }
 
 //settings for popup menu vocable list
 class VocSettings {
   static String del = "delete";
-  static String add = "add";
+  // static String add = "add";
 
-  static List<String> editVoc = <String>[add, del];
+  static List<String> editVoc = <String>[del];
 }

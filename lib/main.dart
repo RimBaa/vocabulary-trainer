@@ -69,7 +69,7 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: _setScreen(indexScreen, context), //_homeScreen(context),
+      body: _setScreen(indexScreen, context),
       //drawer: createDrawer(context),
       bottomNavigationBar: bottomNaviBar(context),
     );

@@ -90,8 +90,7 @@ class LearnState extends State<Learn> {
     if (vocableList != null) {
       if (vocableList.length <= 3) {
         return new Container(
-            width: 150,
-            height: 150,
+            alignment: Alignment.center,
             child: Text(
                 "There are not enough vocables to learn. At least 4 vocables are needed."));
       } else {
@@ -146,7 +145,7 @@ class LearnState extends State<Learn> {
           counter = -1;
         }
         counter += 1;
-        return new LettersOrder(questionList[counter], questionMode, answerMode,
+        return new LettersOrder(questionList[counter], 'translation', 'word',
             callbackSet, correctCounter, progressvalue);
       } else if (progresscounter <= vocablenumber * 3) {
         if (counter == vocablenumber - 1) {
@@ -362,8 +361,16 @@ class MultChoiceState extends State<MultChoiceCl> {
     Colors.white,
     Colors.white
   ];
-
+  Timer timer;
   MultChoiceState(this.answered);
+
+  @override
+  void dispose() {
+    if (timer != null) {
+      timer.cancel();
+    }
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -392,9 +399,18 @@ class MultChoiceState extends State<MultChoiceCl> {
 // multiple choice learn option
 // after 6 correct answers section will be updated till section 3
   Widget multipleChoice() {
-    Timer timer;
     int section = 1;
+    String questionNote = '';
+    String answerNote = '';
     print(widget.correctCounter);
+    if (widget.questionMode == 'translation') {
+      questionNote = 'translationNote';
+      answerNote = 'wordNote';
+    } else {
+      questionNote = 'wordNote';
+      answerNote = 'translationNote';
+    }
+
     if (answered == false) {
       multChoiceList = [];
       dynColor = [Colors.white, Colors.white, Colors.white, Colors.white];
@@ -416,8 +432,9 @@ class MultChoiceState extends State<MultChoiceCl> {
       print('bottom');
       speakWord(vocableList[widget.questionId]['translation']);
       timer = new Timer.periodic(
-          Duration(seconds: 2),
+          Duration(seconds: 1),
           (Timer t) => setState(() {
+                print(mounted);
                 timer.cancel();
                 widget.callback();
               }));
@@ -433,9 +450,13 @@ class MultChoiceState extends State<MultChoiceCl> {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: <Widget>[
-                Text(vocableList[widget.questionId][widget.questionMode],
-                    style:
-                        TextStyle(fontSize: 25, fontWeight: FontWeight.bold)),
+                Column(children: [
+                  Text(vocableList[widget.questionId][widget.questionMode],
+                      style:
+                          TextStyle(fontSize: 25, fontWeight: FontWeight.bold)),
+                  Text(vocableList[widget.questionId][questionNote],
+                      style: (TextStyle(fontSize: 15, color: Colors.grey)))
+                ])
               ],
             )),
         Container(
@@ -451,9 +472,12 @@ class MultChoiceState extends State<MultChoiceCl> {
                           crossAxisAlignment: CrossAxisAlignment.center,
                           children: [
                             Text(
-                              vocableList[multChoiceList[0]][widget.answerMode],
-                              style: TextStyle(fontSize: 20),
-                            )
+                                vocableList[multChoiceList[0]]
+                                    [widget.answerMode],
+                                style: TextStyle(fontSize: 20)),
+                            Text(vocableList[multChoiceList[0]][answerNote],
+                                style: (TextStyle(
+                                    fontSize: 15, color: Colors.grey)))
                           ]),
                       onTap: () async {
                         if (widget.questionId == multChoiceList[0]) {
@@ -491,7 +515,10 @@ class MultChoiceState extends State<MultChoiceCl> {
                             Text(
                               vocableList[multChoiceList[1]][widget.answerMode],
                               style: TextStyle(fontSize: 20),
-                            )
+                            ),
+                            Text(vocableList[multChoiceList[1]][answerNote],
+                                style: (TextStyle(
+                                    fontSize: 15, color: Colors.grey)))
                           ]),
                       onTap: () async {
                         if (widget.questionId == multChoiceList[1]) {
@@ -529,7 +556,10 @@ class MultChoiceState extends State<MultChoiceCl> {
                             Text(
                               vocableList[multChoiceList[2]][widget.answerMode],
                               style: TextStyle(fontSize: 20),
-                            )
+                            ),
+                            Text(vocableList[multChoiceList[2]][answerNote],
+                                style: (TextStyle(
+                                    fontSize: 15, color: Colors.grey)))
                           ]),
                       onTap: () async {
                         if (widget.questionId == multChoiceList[2]) {
@@ -567,7 +597,10 @@ class MultChoiceState extends State<MultChoiceCl> {
                             Text(
                               vocableList[multChoiceList[3]][widget.answerMode],
                               style: TextStyle(fontSize: 20),
-                            )
+                            ),
+                            Text(vocableList[multChoiceList[3]][answerNote],
+                                style: (TextStyle(
+                                    fontSize: 15, color: Colors.grey)))
                           ]),
                       onTap: () async {
                         if (widget.questionId == multChoiceList[3]) {
@@ -632,7 +665,7 @@ class LettersOrderState extends State<LettersOrder> {
   List<String> lettersList;
   String answerStr;
   bool isKorean = false;
-
+  Timer timer;
   LettersOrderState(this.answered);
 
   @override
@@ -640,6 +673,14 @@ class LettersOrderState extends State<LettersOrder> {
     super.initState();
     answerColor = Colors.grey[100];
     correctanswer = '';
+  }
+
+  @override
+  void dispose() {
+    if (timer != null) {
+      timer.cancel();
+    }
+    super.dispose();
   }
 
   @override
@@ -669,7 +710,6 @@ class LettersOrderState extends State<LettersOrder> {
   //LetterOrder
   Widget letterOrder() {
     String answer = vocableList[widget.questionId][widget.answerMode];
-    Timer timer;
 
     print(widget.correctCounter);
     if (answered == false) {
@@ -699,7 +739,7 @@ class LettersOrderState extends State<LettersOrder> {
       print('bottom');
       speakWord(vocableList[widget.questionId]['translation']);
       timer = new Timer.periodic(
-          Duration(seconds: 2),
+          Duration(seconds: 1),
           (Timer t) => setState(() {
                 timer.cancel();
                 widget.callback();
@@ -1410,6 +1450,9 @@ class EnterAnswerState extends State<EnterAnswerCl> {
   }
 
   void dispose() {
+    if (timer != null) {
+      timer.cancel();
+    }
     _controller.dispose();
     super.dispose();
   }
@@ -1447,7 +1490,7 @@ class EnterAnswerState extends State<EnterAnswerCl> {
       answered = false;
       speakWord(vocableList[widget.questionId]['translation']);
       timer = new Timer.periodic(
-          Duration(seconds: 2),
+          Duration(seconds: 1),
           (Timer t) => setState(() {
                 timer.cancel();
                 widget.callback();

@@ -14,5 +14,6 @@ List vocableList;
 String dbName = 'vocTable';
 List select2del = [];
 List<int> idList = [];
+bool direction = true; // true -> ask translation, false -> aks word  
 
 //List<int> correctCounter = [];
