@@ -1,6 +1,5 @@
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter/material.dart';
-//import 'package:sqflite/sqlite_api.dart';
 
 SharedPreferences prefs;
 
@@ -15,5 +14,5 @@ String dbName = 'vocTable';
 List select2del = [];
 List<int> idList = [];
 bool direction = true; // true -> ask translation, false -> aks word  
-
-//List<int> correctCounter = [];
+String languageCode;
+String language;

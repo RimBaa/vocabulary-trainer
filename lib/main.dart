@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-//import 'package:shared_preferences/shared_preferences.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 //import 'package:sqflite/sqflite.dart';
 //import 'package:vocabulary/section.dart';
-//import 'global_vars.dart';
+import 'global_vars.dart';
 //import 'language.dart';
 import 'vocable.dart';
 //import 'package:path/path.dart';
@@ -28,8 +28,17 @@ class VocabularyState extends State<VocabularyApp> {
   @override
   void initState() {
     super.initState();
-    ListVocabState vocObj = new ListVocabState();
+    getDB().whenComplete((){setState(() {
+      
+    });});
+  }
 
+  getDB() async {
+    prefs = await SharedPreferences.getInstance();
+    language = prefs.getString('language') ?? 'English';
+    languageCode = prefs.getString('languageCode') ?? 'en';
+    print(languageCode);
+    ListVocabState vocObj = new ListVocabState();
     getDatabase().whenComplete(() {
       vocObj.getVocableList().whenComplete(() {
         setState(() {});
@@ -84,8 +93,7 @@ class _MyHomePageState extends State<MyHomePage> {
             icon: Icon(Icons.home), title: Text('vocabulary')),
         // BottomNavigationBarItem(
         //     icon: Icon(Icons.table_chart), title: Text('sections')),
-        BottomNavigationBarItem(
-            icon: Icon(Icons.school), title: Text('learn'))
+        BottomNavigationBarItem(icon: Icon(Icons.school), title: Text('learn'))
       ],
       backgroundColor: Colors.amberAccent[100],
       onTap: (value) {
@@ -100,8 +108,8 @@ class _MyHomePageState extends State<MyHomePage> {
   _setScreen(int index, context) {
     if (index == 0) {
       return ListVocab();
-    // } else if (index == 1) {
-    //   return Sections();
+      // } else if (index == 1) {
+      //   return Sections();
     } else {
       return Learn();
     }

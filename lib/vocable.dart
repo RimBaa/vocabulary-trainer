@@ -1,3 +1,5 @@
+import 'dart:convert';
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_tts/flutter_tts.dart';
 import 'package:vocabulary/global_vars.dart';
@@ -5,6 +7,10 @@ import 'dart:async';
 import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
+import 'package:csv/csv.dart';
+import 'package:flutter_share/flutter_share.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:file_picker/file_picker.dart';
 //import 'language.dart';
 
 // page with list of vocables
@@ -16,9 +22,18 @@ class ListVocab extends StatefulWidget {
 class ListVocabState extends State<ListVocab> {
   bool deleteBool = false;
 
+  List<List<String>> languagesList = [
+    ['English', 'en'],
+    ['French', 'fr'],
+    ['Korean', 'ko'],
+    ['Portuguese', 'pt'],
+    ['Spanish', 'es']
+  ];
+
   void initState() {
     super.initState();
-
+    // language = 'Korean';
+    // languageCode = 'ko';
     deleteBool = false;
   }
 
@@ -28,8 +43,16 @@ class ListVocabState extends State<ListVocab> {
     return Scaffold(
       resizeToAvoidBottomInset: false,
       appBar: AppBar(
-        title: Text("vocabulary",
-            style: TextStyle(fontSize: fontSize, color: Colors.white)),
+        title: Title(
+            color: Colors.amber,
+            child: Row(children: [
+              Text(language, style: TextStyle(fontSize: fontSize)),
+              IconButton(
+                  icon: Icon(Icons.language),
+                  onPressed: () {
+                    _showLanguages(context);
+                  })
+            ])),
         backgroundColor: Colors.amber,
         actions: <Widget>[
           selectPopupMenu(context, deleteBool),
@@ -47,25 +70,58 @@ class ListVocabState extends State<ListVocab> {
     );
   }
 
+  _showLanguages(BuildContext context) {
+    showDialog(
+        context: context,
+        barrierDismissible: true,
+        builder: (BuildContext context) {
+          return AlertDialog(
+              backgroundColor: Colors.amber[100],
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.all(Radius.circular(10.0))),
+              title: Text('Choose a language'),
+              content: SingleChildScrollView(
+                  child: new Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: <Widget>[
+                    Container(
+                        height: MediaQuery.of(context).size.height * 0.4,
+                        width: MediaQuery.of(context).size.width * 0.6,
+                        child: ListView.builder(
+                            itemCount: languagesList.length,
+                            itemBuilder: (context, index) {
+                              return ListTile(
+                                title: Text(languagesList[index][0]),
+                                onTap: () {
+                                  language = languagesList[index][0];
+                                  languageCode = languagesList[index][1];
+
+                                  getDatabase().whenComplete(() {
+                                    getVocableList().whenComplete(() {
+                                      setState(() {
+                                        prefs.setString('language', language);
+                                        prefs.setString(
+                                            'languageCode', languageCode);
+                                        Navigator.pop(context);
+                                      });
+                                    });
+                                  });
+                                },
+                              );
+                            }))
+                  ])));
+        });
+  }
+
   addButton(BuildContext context, bool delete) {
     if (delete == false) {
       return FloatingActionButton(
           child: Icon(Icons.add),
           backgroundColor: Colors.amber,
           onPressed: () async {
-            // await addVocable(context).whenComplete(() async {
-            //   await getVocableList().whenComplete(() {
-            //     // setState(() {
-            //        deleteBool = false;
-            //     //   print("init");
-            //     // });
-            //   });
-            // });
             await addVocable(context).whenComplete(() async {
               await getVocableList();
             });
-
-            //  deleteBool = false;
             setState(() {});
           });
     } else {
@@ -77,12 +133,20 @@ class ListVocabState extends State<ListVocab> {
     if (delete == false) {
       return PopupMenuButton(onSelected: (value) async {
         print(value);
-        if (value == 'add') {
-          await addVocable(context);
-          await getVocableList();
-          deleteBool = false;
-        } else {
+        // if (value == 'add') {
+        //   await addVocable(context);
+        //   await getVocableList();
+        //   deleteBool = false;
+        // }
+
+        if (value == 'delete') {
           deleteBool = true;
+        } else if (value == 'export') {
+          deleteBool = false;
+          exportData(context);
+        } else if (value == 'import') {
+          deleteBool = false;
+          importData();
         }
         setState(() {});
       }, itemBuilder: (BuildContext context) {
@@ -99,6 +163,83 @@ class ListVocabState extends State<ListVocab> {
       }, itemBuilder: (BuildContext context) {
         return [PopupMenuItem(value: 'select all', child: Text('select all'))];
       });
+    }
+  }
+
+  exportData(BuildContext context) {
+    if (vocableList != null) {
+      var data = <List>[];
+      var keys = <String>[];
+      var keyIndexMap = <String, int>{};
+
+      int _addKey(String key) {
+        var index = keys.length;
+        keyIndexMap[key] = index;
+        keys.add(key);
+        for (var dataRow in data) {
+          dataRow.add(null);
+        }
+        return index;
+      }
+
+      for (var map in vocableList) {
+        // This list might grow if a new key is found
+        var dataRow = List(keyIndexMap.length);
+        // Fix missing key
+        map.forEach((key, value) {
+          var keyIndex = keyIndexMap[key];
+          if (keyIndex == null) {
+            // New key is found
+            // Add it and fix previous data
+            keyIndex = _addKey(key);
+            // grow our list
+            dataRow = List.from(dataRow, growable: true)..add(value);
+          } else {
+            dataRow[keyIndex] = value;
+          }
+        });
+        data.add(dataRow);
+      }
+
+      //  print(data);
+
+      ListToCsvConverter converter = const ListToCsvConverter();
+      String csvList = converter.convert(data);
+      writeFile(csvList);
+    }
+  }
+
+  writeFile(String csv) async {
+    final directory = await getTemporaryDirectory();
+    final pathOfTheFileToWrite = directory.path + "/vocableDatabase.csv";
+    File file = File(pathOfTheFileToWrite);
+    file.writeAsString(csv);
+
+    print(pathOfTheFileToWrite);
+
+    await FlutterShare.shareFile(
+      title: 'Export vocabulary',
+      filePath: pathOfTheFileToWrite,
+    );
+  }
+
+  importData() async {
+    File file = await FilePicker.getFile(allowedExtensions: ['csv']);
+    final csvInput = file.openRead();
+    final importDatabase = await csvInput
+        .transform(utf8.decoder)
+        .transform(new CsvToListConverter())
+        .toList();
+
+    Database db = await database;
+    db.rawDelete('DELETE * FROM $languageCode');
+
+    insertAll(importDatabase);
+  }
+
+  insertAll(List<List<dynamic>> data) async {
+    for (var row in data) {
+      await addVoc2Table(row[0], row[1], row[2], row[3]);
     }
   }
 
@@ -303,6 +444,7 @@ class ListVocabState extends State<ListVocab> {
         barrierDismissible: true,
         builder: (BuildContext context) {
           return AlertDialog(
+            backgroundColor: Colors.amber[100],
             shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.all(Radius.circular(10.0))),
             title: Text('Enter a new vocable'),
@@ -365,6 +507,7 @@ class ListVocabState extends State<ListVocab> {
         barrierDismissible: true,
         builder: (BuildContext context) {
           return AlertDialog(
+            backgroundColor: Colors.amber[100],
             shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.all(Radius.circular(10.0))),
             title: Text('Edit a vocable'),
@@ -470,7 +613,7 @@ class ListVocabState extends State<ListVocab> {
   getVocableList() async {
     Database db = await database;
 
-    vocableList = await db.query(dbName);
+    vocableList = await db.query(languageCode);
     print(await vocable());
   }
 
@@ -478,7 +621,7 @@ class ListVocabState extends State<ListVocab> {
   getVocableListId() async {
     Database db = await database;
     idList = [];
-    vocableList = await db.query(dbName);
+    vocableList = await db.query(languageCode);
     // print(await vocable());
 
     for (int i = 0; i < vocableList.length; i++) {
@@ -488,6 +631,14 @@ class ListVocabState extends State<ListVocab> {
   }
 }
 
+//get vocable list of current language of chosen sections
+// getVocableList() async {
+//   Database db = await database;
+//   db.rawQuery('SELECT * FROM ');
+//   vocableList = await db.query(languageCode);
+//   print(await vocable());
+// }
+
 //database methods
 
 Future<void> insertVocable(VocableTable vocable) async {
@@ -495,7 +646,7 @@ Future<void> insertVocable(VocableTable vocable) async {
 
   db = await database;
 
-  await db.insert(dbName, vocable.toMap(),
+  await db.insert(languageCode, vocable.toMap(),
       conflictAlgorithm: ConflictAlgorithm.ignore);
 }
 
@@ -504,7 +655,7 @@ Future<List<VocableTable>> vocable() async {
 
   db = await database;
 
-  final List<Map<String, dynamic>> maps = await db.query(dbName);
+  final List<Map<String, dynamic>> maps = await db.query(languageCode);
   dbSize = maps.length;
   return List.generate(maps.length, (i) {
     return VocableTable(
@@ -522,7 +673,7 @@ Future<void> updateVocableTable(VocableTable vocable) async {
 
   db = await database;
 
-  await db.update(dbName, vocable.toMap(),
+  await db.update(languageCode, vocable.toMap(),
       where: "id = ?", whereArgs: [vocable.id]);
 }
 
@@ -530,15 +681,16 @@ Future<void> deleteVocableTable(int id) async {
   Database db;
   db = await database;
 
-  await db.delete(dbName, where: "id = ?", whereArgs: [id]);
+  await db.delete(languageCode, where: "id = ?", whereArgs: [id]);
 }
 
 getDatabase() async {
-  String databasename = dbName + '.db';
+  String databasename = languageCode + '.db';
+
   database = openDatabase(join(await getDatabasesPath(), databasename),
       onCreate: (db, version) {
     return db.execute(
-        "CREATE TABLE $dbName(id INTEGER PRIMARY KEY, word TEXT, wordNote TEXT, translation TEXT, translationNote TEXT, section INTEGER)");
+        "CREATE TABLE $languageCode(id INTEGER PRIMARY KEY, word TEXT, wordNote TEXT, translation TEXT, translationNote TEXT, section INTEGER)");
   }, version: 1);
 }
 
@@ -578,7 +730,9 @@ class VocableTable {
 //settings for popup menu vocable list
 class VocSettings {
   static String del = "delete";
+  static String export = "export";
+  static String import = "import";
   // static String add = "add";
 
-  static List<String> editVoc = <String>[del];
+  static List<String> editVoc = <String>[del, export, import];
 }

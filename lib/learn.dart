@@ -185,16 +185,13 @@ class StartLearning extends StatefulWidget {
   StartLearningState createState() => StartLearningState();
 }
 
-Icon iconArrow = Icon(Icons.arrow_forward);
-
 class StartLearningState extends State<StartLearning> {
   int iconCounter;
-
+  List<bool> chosenSectionList = [false, false, false];
   @override
   void initState() {
     iconCounter = 0;
     super.initState();
-    iconArrow = Icon(Icons.arrow_forward);
   }
 
   @override
@@ -202,15 +199,13 @@ class StartLearningState extends State<StartLearning> {
     return Scaffold(
         resizeToAvoidBottomInset: false,
         appBar: AppBar(
-          title: Text("learn",
-              style: TextStyle(fontSize: fontSize, color: Colors.white)),
+          title: Text("learn", style: TextStyle(fontSize: fontSize)),
           backgroundColor: Colors.amber,
           actions: <Widget>[
             RaisedButton(
                 color: Colors.amber,
                 child: Icon(
                   Icons.settings,
-                  color: Colors.white,
                 ),
                 onPressed: () {
                   _settings(context);
@@ -224,8 +219,7 @@ class StartLearningState extends State<StartLearning> {
           child: RaisedButton(
               padding: EdgeInsets.all(26),
               color: Colors.amber[400],
-              child: Text('start learning',
-                  style: TextStyle(fontSize: 25, color: Colors.white)),
+              child: Text('start learning', style: TextStyle(fontSize: 25)),
               onPressed: () {
                 widget.callback();
               }),
@@ -237,48 +231,69 @@ class StartLearningState extends State<StartLearning> {
         context: context,
         barrierDismissible: true,
         builder: (BuildContext context) {
-          return AlertDialog(
-            shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.all(Radius.circular(20.0))),
-            actions: <Widget>[
-              RaisedButton(
-                  child: Text('Back'),
-                  onPressed: () {
-                    Navigator.pop(context);
-                  }),
-              RaisedButton(
-                  child: Text('Change'),
-                  onPressed: () {
-                    Navigator.pop(context);
-                  })
-            ],
-            title: Title(
-                color: Colors.amber,
-                child: Text('Settings', style: TextStyle(color: Colors.black))),
-            content: new Column(
-              mainAxisSize: MainAxisSize.min,
-              children: <Widget>[
-                Container(
-                    alignment: Alignment.topLeft, child: Text('direction:')),
-                Container(
-                    alignment: Alignment.topLeft,
-                    child: new IconButton(
-                        icon: iconArrow,
-                        onPressed: () {
-                          setState(() {
-                            print(Icon(Icons.arrow_forward));
-                            if (iconArrow == Icon(Icons.arrow_forward)) {
-                              iconArrow = Icon(Icons.arrow_back);
-                            } else {
-                              iconArrow = Icon(Icons.arrow_forward);
-                            }
-                            // iconArrow = iconArrow == Icon(Icons.arrow_forward) ? Icon(Icons.arrow_back) : Icon(Icons.arrow_forward);
-                            print(iconArrow);
-                          });
-                        }))
+          return StatefulBuilder(builder: (context, setState) {
+            return AlertDialog(
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.all(Radius.circular(20.0))),
+              actions: <Widget>[
+                RaisedButton(
+                    child: Text('Ok'),
+                    onPressed: () {
+                      Navigator.pop(context);
+                    })
               ],
-            ),
-          );
+              title: Title(
+                  color: Colors.amber,
+                  child:
+                      Text('Settings', style: TextStyle(color: Colors.black))),
+              content: new Column(
+                mainAxisSize: MainAxisSize.min,
+                children: <Widget>[
+                  Column(
+                    children: <Widget>[
+                      Row(children: <Widget>[
+                        Text('section 1'),
+                        Container(
+                          padding: EdgeInsets.only(left:50.0),
+                          child:
+                        Checkbox(
+                            value: chosenSectionList[0],
+                            onChanged: (value) {
+                              setState(() {
+                                chosenSectionList[0] = !chosenSectionList[0];
+                              });
+                            }))
+                      ]),Row(children: <Widget>[
+                        Text('section 2'),
+                        Container(
+                          padding: EdgeInsets.only(left: 50.0),
+                          child:
+                        Checkbox(
+                            value: chosenSectionList[1],
+                            onChanged: (value) {
+                              setState(() {
+                                chosenSectionList[1] = !chosenSectionList[1];
+                              });
+                            }))
+                      ]),Row(children: <Widget>[
+                        Text('section 3'),
+                        Container(
+                          padding: EdgeInsets.only(left: 50.0),
+                          child:
+                        Checkbox(
+                            value: chosenSectionList[2],
+                            onChanged: (value) {
+                              setState(() {
+                                chosenSectionList[2] = !chosenSectionList[2];
+                              });
+                            }))
+                      ])
+                    ],
+                  )
+                ],
+              ),
+            );
+          });
         });
   }
 }
@@ -445,8 +460,8 @@ class MultChoiceState extends State<MultChoiceCl> {
     return Column(
       children: <Widget>[
         Container(
-            padding: EdgeInsets.all(10),
-            height: 100,
+            //  padding: EdgeInsets.all(10),
+            height: MediaQuery.of(context).size.height * 0.1,
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: <Widget>[
@@ -460,7 +475,7 @@ class MultChoiceState extends State<MultChoiceCl> {
               ],
             )),
         Container(
-            height: 380,
+            height: MediaQuery.of(context).size.height * 0.6,
             child: GridView.count(
               crossAxisCount: 2,
               children: <Widget>[
@@ -749,7 +764,7 @@ class LettersOrderState extends State<LettersOrder> {
     return Column(
       children: <Widget>[
         Container(
-            height: MediaQuery.of(context).size.height * 0.3,
+            height: MediaQuery.of(context).size.height * 0.2,
             child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: <Widget>[
@@ -764,9 +779,9 @@ class LettersOrderState extends State<LettersOrder> {
                     fontWeight: FontWeight.bold,
                     color: Colors.green))),
         Container(
-            padding:
-                EdgeInsets.only(top: MediaQuery.of(context).size.height * 0.05),
-            width: MediaQuery.of(context).size.width * 0.7,
+            padding: EdgeInsets.only(
+                top: MediaQuery.of(context).size.height * 0.005),
+            width: MediaQuery.of(context).size.width * 0.5,
             decoration: BoxDecoration(
                 border:
                     Border(bottom: BorderSide(width: 3.0, color: answerColor))),
@@ -1490,7 +1505,7 @@ class EnterAnswerState extends State<EnterAnswerCl> {
       answered = false;
       speakWord(vocableList[widget.questionId]['translation']);
       timer = new Timer.periodic(
-          Duration(seconds: 1),
+          Duration(seconds: 2),
           (Timer t) => setState(() {
                 timer.cancel();
                 widget.callback();
@@ -1499,7 +1514,7 @@ class EnterAnswerState extends State<EnterAnswerCl> {
     return Column(
       children: <Widget>[
         Container(
-            height: MediaQuery.of(context).size.height * 0.3,
+            height: MediaQuery.of(context).size.height * 0.2,
             child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: <Widget>[
@@ -1543,7 +1558,7 @@ class EnterAnswerState extends State<EnterAnswerCl> {
 
   speakWord(String word) async {
     FlutterTts flutterTts = FlutterTts();
-    flutterTts.setLanguage('ko');
+    flutterTts.setLanguage(languageCode);
     flutterTts.setPitch(1.0);
     await flutterTts.speak(word);
   }
