@@ -11,6 +11,9 @@ import 'package:csv/csv.dart';
 import 'package:flutter_share/flutter_share.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:file_picker/file_picker.dart';
+import 'package:ext_storage/ext_storage.dart';
+import 'package:permission_handler/permission_handler.dart';
+
 //import 'language.dart';
 
 // page with list of vocables
@@ -211,20 +214,28 @@ class ListVocabState extends State<ListVocab> {
 
   writeFile(String csv) async {
     final directory = await getTemporaryDirectory();
-    final pathOfTheFileToWrite = directory.path + "/vocableDatabase.csv";
+    final downdir = await ExtStorage.getExternalStoragePublicDirectory(
+        ExtStorage.DIRECTORY_DOWNLOADS);
+    final pathOfTheFileToWrite = downdir + "/vocableDatabase.csv";
     File file = File(pathOfTheFileToWrite);
+
+    var status = await Permission.storage.status;
+    if (!status.isGranted) {
+      await Permission.storage.request();
+    }
+
     file.writeAsString(csv);
 
     print(pathOfTheFileToWrite);
 
-    await FlutterShare.shareFile(
-      title: 'Export vocabulary',
-      filePath: pathOfTheFileToWrite,
-    );
+    // await FlutterShare.shareFile(
+    //   title: 'Export vocabulary',
+    //   filePath: pathOfTheFileToWrite,
+    // );
   }
 
   importData() async {
-    File file = await FilePicker.getFile(allowedExtensions: ['csv']);
+    File file = await FilePicker.getFile(allowedExtensions: ['csv'],type: FileType.custom);
     final csvInput = file.openRead();
     final importDatabase = await csvInput
         .transform(utf8.decoder)
@@ -232,15 +243,22 @@ class ListVocabState extends State<ListVocab> {
         .toList();
 
     Database db = await database;
-    db.rawDelete('DELETE * FROM $languageCode');
+    await db.transaction((txn) async {
+      var batch = txn.batch();
+      batch.delete(languageCode);
+      await batch.commit();
+    });
 
     insertAll(importDatabase);
   }
 
   insertAll(List<List<dynamic>> data) async {
     for (var row in data) {
-      await addVoc2Table(row[0], row[1], row[2], row[3]);
+      await addVoc2Table(row[1], row[2], row[3], row[4]);
     }
+    getVocableList().whenComplete(() {
+      setState(() {});
+    });
   }
 
 // create vocable list
@@ -454,28 +472,28 @@ class ListVocabState extends State<ListVocab> {
               children: <Widget>[
                 new TextField(
                   autofocus: true,
-                  decoration: new InputDecoration(labelText: 'word'),
+                  decoration: new InputDecoration(hintText: 'word'),
                   onChanged: (value) {
                     word = value;
                   },
                 ),
                 new TextField(
                   autofocus: true,
-                  decoration: new InputDecoration(labelText: 'note'),
+                  decoration: new InputDecoration(hintText: 'note'),
                   onChanged: (value) {
                     wordNote = value;
                   },
                 ),
                 new TextField(
                   autofocus: true,
-                  decoration: new InputDecoration(labelText: 'translation'),
+                  decoration: new InputDecoration(hintText: 'translation'),
                   onChanged: (value) {
                     translation = value;
                   },
                 ),
                 new TextField(
                   autofocus: true,
-                  decoration: new InputDecoration(labelText: 'note'),
+                  decoration: new InputDecoration(hintText: 'note'),
                   onChanged: (value) {
                     translationNote = value;
                   },
@@ -519,7 +537,7 @@ class ListVocabState extends State<ListVocab> {
                   controller: new TextEditingController(
                       text: vocableList[index]['word']),
                   autofocus: true,
-                  decoration: new InputDecoration(labelText: 'word'),
+                  decoration: new InputDecoration(hintText: 'word'),
                   onChanged: (value) {
                     word = value;
                   },
@@ -528,7 +546,7 @@ class ListVocabState extends State<ListVocab> {
                   controller: new TextEditingController(
                       text: vocableList[index]['wordNote']),
                   autofocus: true,
-                  decoration: new InputDecoration(labelText: 'note'),
+                  decoration: new InputDecoration(hintText: 'note'),
                   onChanged: (value) {
                     wordNote = value;
                   },
@@ -537,7 +555,7 @@ class ListVocabState extends State<ListVocab> {
                   controller: new TextEditingController(
                       text: vocableList[index]['translation']),
                   autofocus: true,
-                  decoration: new InputDecoration(labelText: 'translation'),
+                  decoration: new InputDecoration(hintText: 'translation'),
                   onChanged: (value) {
                     translation = value;
                   },
@@ -546,7 +564,7 @@ class ListVocabState extends State<ListVocab> {
                   controller: new TextEditingController(
                       text: vocableList[index]['translationNote']),
                   autofocus: true,
-                  decoration: new InputDecoration(labelText: 'note'),
+                  decoration: new InputDecoration(hintText: 'note'),
                   onChanged: (value) {
                     translationNote = value;
                   },
@@ -629,15 +647,17 @@ class ListVocabState extends State<ListVocab> {
     }
     return idList;
   }
-}
 
 //get vocable list of current language of chosen sections
-// getVocableList() async {
-//   Database db = await database;
-//   db.rawQuery('SELECT * FROM ');
-//   vocableList = await db.query(languageCode);
-//   print(await vocable());
-// }
+  getvocableLearnList() async {
+    Database db = await database;
+    print(sectionNum);
+    vocableLearnList = await db.query(languageCode,
+        where: 'section IN (?,?,?)', whereArgs: sectionNum);
+
+    print(vocableLearnList);
+  }
+}
 
 //database methods
 

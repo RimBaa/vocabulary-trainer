@@ -34,18 +34,34 @@ class LearnState extends State<Learn> {
   int vocablenumber;
   double addprogress;
   int counter;
+  List<bool> chosenSectionList;
+  ListVocabState vocListObj = new ListVocabState();
 
   @override
   void initState() {
     super.initState();
+    rebuildScreen = false;
     counter = -1;
+    sectionNum = [1, 2, 3];
+    showSettings = true;
     progressvalue = 0.0;
     progresscounter = 0;
-    ListVocabState vocListObj = new ListVocabState();
-    vocListObj.getVocableList().whenComplete(() {
+    chosenSectionList = [true, true, true];
+    vocListObj.getvocableLearnList().whenComplete(() {
       setState(() {
         print("init");
       });
+    });
+  }
+
+  void callbackSettings() {
+    setState(() {
+      progressvalue = 0.0;
+      newSession = true;
+      progresscounter = 0;
+      showSettings = true;
+      correctCounter = [];
+      Navigator.pop(context);
     });
   }
 
@@ -54,6 +70,7 @@ class LearnState extends State<Learn> {
     setState(() {
       progressvalue = 0.0;
       newSession = true;
+      showSettings = true;
       progresscounter = 0;
       correctCounter = [];
     });
@@ -72,32 +89,167 @@ class LearnState extends State<Learn> {
 
   @override
   Widget build(BuildContext context) {
+    print('AAAAAAA');
+    if (rebuildScreen && !newSession) {
+      rebuildScreen = false;
+      callback();
+    }
     return Scaffold(
+      appBar: AppBar(
+          title: Text(language, style: TextStyle(fontSize: fontSize)),
+          backgroundColor: Colors.amber,
+          actions: _actionWidgets()),
       body: getlearnoption(context),
     );
   }
+
 //   }
+  List<Widget> _actionWidgets() {
+    if (showSettings == true) {
+      return [
+        RaisedButton(
+            color: Colors.amber,
+            child: Icon(
+              Icons.settings,
+            ),
+            onPressed: () {
+              _settings(context);
+            })
+      ];
+    } else
+      return [];
+  }
+
+  Future _settings(BuildContext context) {
+    return showDialog<String>(
+        context: context,
+        barrierDismissible: true,
+        builder: (BuildContext context) {
+          return StatefulBuilder(builder: (context, setState) {
+            return AlertDialog(
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.all(Radius.circular(20.0))),
+              actions: <Widget>[
+                RaisedButton(
+                    child: Text('Ok'),
+                    onPressed: () {
+                      callbackSettings();
+                    })
+              ],
+              title: Title(
+                  color: Colors.amber,
+                  child:
+                      Text('Settings', style: TextStyle(color: Colors.black))),
+              content: new Column(
+                mainAxisSize: MainAxisSize.min,
+                children: <Widget>[
+                  Column(
+                    children: <Widget>[
+                      Row(children: <Widget>[
+                        Text('section 1'),
+                        Container(
+                            padding: EdgeInsets.only(left: 50.0),
+                            child: Checkbox(
+                                value: chosenSectionList[0],
+                                onChanged: (value) {
+                                  chosenSectionList[0] = !chosenSectionList[0];
+
+                                  if (chosenSectionList[0] == true) {
+                                    if (!sectionNum.contains(1)) {
+                                      sectionNum.add(1);
+                                    }
+                                  } else {
+                                    if (sectionNum.contains(1)) {
+                                      sectionNum.remove(1);
+                                    }
+                                  }
+                                  vocListObj
+                                      .getvocableLearnList()
+                                      .whenComplete(() {
+                                    setState(() {});
+                                  });
+                                }))
+                      ]),
+                      Row(children: <Widget>[
+                        Text('section 2'),
+                        Container(
+                            padding: EdgeInsets.only(left: 50.0),
+                            child: Checkbox(
+                                value: chosenSectionList[1],
+                                onChanged: (value) {
+                                  chosenSectionList[1] = !chosenSectionList[1];
+                                  if (chosenSectionList[1] == true) {
+                                    if (!sectionNum.contains(2)) {
+                                      sectionNum.add(2);
+                                    }
+                                  } else {
+                                    if (sectionNum.contains(2)) {
+                                      sectionNum.remove(2);
+                                    }
+                                  }
+                                  vocListObj
+                                      .getvocableLearnList()
+                                      .whenComplete(() {
+                                    setState(() {});
+                                  });
+                                }))
+                      ]),
+                      Row(children: <Widget>[
+                        Text('section 3'),
+                        Container(
+                            padding: EdgeInsets.only(left: 50.0),
+                            child: Checkbox(
+                                value: chosenSectionList[2],
+                                onChanged: (value) {
+                                  chosenSectionList[2] = !chosenSectionList[2];
+                                  if (chosenSectionList[2] == true) {
+                                    if (!sectionNum.contains(3)) {
+                                      sectionNum.add(3);
+                                    }
+                                  } else {
+                                    if (sectionNum.contains(3)) {
+                                      sectionNum.remove(3);
+                                    }
+                                  }
+                                  vocListObj
+                                      .getvocableLearnList()
+                                      .whenComplete(() {
+                                    setState(() {});
+                                  });
+                                }))
+                      ])
+                    ],
+                  )
+                ],
+              ),
+            );
+          });
+        });
+  }
 
   Widget getlearnoption(BuildContext context) {
-    if (vocableList.length > 9) {
-      vocablenumber = 10;
-    } else {
-      vocablenumber = vocableList.length;
-    }
-    addprogress = 1 / (3 * vocablenumber);
-    print('vocablenumber $vocablenumber');
-    print(vocableList);
-    if (vocableList != null) {
-      if (vocableList.length <= 3) {
-        return new Container(
-            alignment: Alignment.center,
+    if (vocableLearnList != null) {
+      if (vocableLearnList.length > 9) {
+        vocablenumber = 10;
+      } else {
+        vocablenumber = vocableLearnList.length;
+      }
+      addprogress = 1 / (3 * vocablenumber);
+      print('vocablenumber $vocablenumber');
+      print(vocableLearnList);
+      if (vocableLearnList.length <= 3) {
+        showSettings = true;
+        return new Center(
             child: Text(
-                "There are not enough vocables to learn. At least 4 vocables are needed."));
+          "There are not enough vocables to start learning. At least 4 vocables are needed.",
+          textAlign: TextAlign.center,
+          style: TextStyle(fontSize: 15.0),
+        ));
       } else {
         Random rnd = new Random();
 
         while (questionList.length < vocablenumber) {
-          int question = rnd.nextInt(vocableList.length);
+          int question = rnd.nextInt(vocableLearnList.length);
           if (!questionList.contains(question)) {
             questionList.add(question);
           }
@@ -120,8 +272,7 @@ class LearnState extends State<Learn> {
         return learn(context);
       }
     } else {
-      return new Container(
-          width: 150, height: 150, child: Text("An error has occured."));
+      return new Container();
     }
   }
 
@@ -131,10 +282,12 @@ class LearnState extends State<Learn> {
     print(newSession);
     if (newSession == true) {
       counter = -1;
-      correctCounter = List.filled(vocableList.length, 0);
+      correctCounter = List.filled(vocableLearnList.length, 0);
+      showSettings = true;
       return new StartLearning(callbackSet);
     } else {
       progresscounter += 1;
+      showSettings = false;
       print('progresscounter $progresscounter');
       if (progresscounter <= vocablenumber) {
         counter += 1;
@@ -156,7 +309,6 @@ class LearnState extends State<Learn> {
             callbackSet, correctCounter, progressvalue);
       } else {
         List<int> overviewAns = countCorrectAns();
-
         return new EndLearn(callback, overviewAns);
       }
     }
@@ -187,7 +339,7 @@ class StartLearning extends StatefulWidget {
 
 class StartLearningState extends State<StartLearning> {
   int iconCounter;
-  List<bool> chosenSectionList = [false, false, false];
+
   @override
   void initState() {
     iconCounter = 0;
@@ -198,20 +350,6 @@ class StartLearningState extends State<StartLearning> {
   Widget build(BuildContext context) {
     return Scaffold(
         resizeToAvoidBottomInset: false,
-        appBar: AppBar(
-          title: Text("learn", style: TextStyle(fontSize: fontSize)),
-          backgroundColor: Colors.amber,
-          actions: <Widget>[
-            RaisedButton(
-                color: Colors.amber,
-                child: Icon(
-                  Icons.settings,
-                ),
-                onPressed: () {
-                  _settings(context);
-                })
-          ],
-        ),
         body: Container(
           width: MediaQuery.of(context).size.width,
           height: MediaQuery.of(context).size.height,
@@ -221,80 +359,10 @@ class StartLearningState extends State<StartLearning> {
               color: Colors.amber[400],
               child: Text('start learning', style: TextStyle(fontSize: 25)),
               onPressed: () {
+                showSettings = false;
                 widget.callback();
               }),
         ));
-  }
-
-  Future _settings(BuildContext context) {
-    return showDialog<String>(
-        context: context,
-        barrierDismissible: true,
-        builder: (BuildContext context) {
-          return StatefulBuilder(builder: (context, setState) {
-            return AlertDialog(
-              shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.all(Radius.circular(20.0))),
-              actions: <Widget>[
-                RaisedButton(
-                    child: Text('Ok'),
-                    onPressed: () {
-                      Navigator.pop(context);
-                    })
-              ],
-              title: Title(
-                  color: Colors.amber,
-                  child:
-                      Text('Settings', style: TextStyle(color: Colors.black))),
-              content: new Column(
-                mainAxisSize: MainAxisSize.min,
-                children: <Widget>[
-                  Column(
-                    children: <Widget>[
-                      Row(children: <Widget>[
-                        Text('section 1'),
-                        Container(
-                          padding: EdgeInsets.only(left:50.0),
-                          child:
-                        Checkbox(
-                            value: chosenSectionList[0],
-                            onChanged: (value) {
-                              setState(() {
-                                chosenSectionList[0] = !chosenSectionList[0];
-                              });
-                            }))
-                      ]),Row(children: <Widget>[
-                        Text('section 2'),
-                        Container(
-                          padding: EdgeInsets.only(left: 50.0),
-                          child:
-                        Checkbox(
-                            value: chosenSectionList[1],
-                            onChanged: (value) {
-                              setState(() {
-                                chosenSectionList[1] = !chosenSectionList[1];
-                              });
-                            }))
-                      ]),Row(children: <Widget>[
-                        Text('section 3'),
-                        Container(
-                          padding: EdgeInsets.only(left: 50.0),
-                          child:
-                        Checkbox(
-                            value: chosenSectionList[2],
-                            onChanged: (value) {
-                              setState(() {
-                                chosenSectionList[2] = !chosenSectionList[2];
-                              });
-                            }))
-                      ])
-                    ],
-                  )
-                ],
-              ),
-            );
-          });
-        });
   }
 }
 
@@ -316,11 +384,6 @@ class EndLearnState extends State<EndLearn> {
 
     return Scaffold(
         resizeToAvoidBottomInset: false,
-        appBar: AppBar(
-          title: Text("learn",
-              style: TextStyle(fontSize: fontSize, color: Colors.white)),
-          backgroundColor: Colors.amber,
-        ),
         body: Container(
             width: MediaQuery.of(context).size.width,
             height: MediaQuery.of(context).size.height,
@@ -391,11 +454,6 @@ class MultChoiceState extends State<MultChoiceCl> {
   Widget build(BuildContext context) {
     return Scaffold(
       resizeToAvoidBottomInset: false,
-      appBar: AppBar(
-        title: Text("learn",
-            style: TextStyle(fontSize: fontSize, color: Colors.white)),
-        backgroundColor: Colors.amber,
-      ),
       body: Column(children: [
         Container(
             height: 50,
@@ -433,7 +491,7 @@ class MultChoiceState extends State<MultChoiceCl> {
       Random rnd = new Random();
       multChoiceList.add(widget.questionId);
       while (multChoiceList.length < 4) {
-        randNumb = rnd.nextInt(vocableList.length);
+        randNumb = rnd.nextInt(vocableLearnList.length);
 
         if (!multChoiceList.contains(randNumb)) {
           multChoiceList.add(randNumb);
@@ -441,11 +499,11 @@ class MultChoiceState extends State<MultChoiceCl> {
       }
 
       multChoiceList.shuffle();
-      section = vocableList[widget.questionId]['section'];
+      section = vocableLearnList[widget.questionId]['section'];
     } else {
       answered = false;
       print('bottom');
-      speakWord(vocableList[widget.questionId]['translation']);
+      speakWord(vocableLearnList[widget.questionId]['translation']);
       timer = new Timer.periodic(
           Duration(seconds: 1),
           (Timer t) => setState(() {
@@ -466,10 +524,10 @@ class MultChoiceState extends State<MultChoiceCl> {
               mainAxisAlignment: MainAxisAlignment.center,
               children: <Widget>[
                 Column(children: [
-                  Text(vocableList[widget.questionId][widget.questionMode],
+                  Text(vocableLearnList[widget.questionId][widget.questionMode],
                       style:
                           TextStyle(fontSize: 25, fontWeight: FontWeight.bold)),
-                  Text(vocableList[widget.questionId][questionNote],
+                  Text(vocableLearnList[widget.questionId][questionNote],
                       style: (TextStyle(fontSize: 15, color: Colors.grey)))
                 ])
               ],
@@ -487,10 +545,11 @@ class MultChoiceState extends State<MultChoiceCl> {
                           crossAxisAlignment: CrossAxisAlignment.center,
                           children: [
                             Text(
-                                vocableList[multChoiceList[0]]
+                                vocableLearnList[multChoiceList[0]]
                                     [widget.answerMode],
                                 style: TextStyle(fontSize: 20)),
-                            Text(vocableList[multChoiceList[0]][answerNote],
+                            Text(
+                                vocableLearnList[multChoiceList[0]][answerNote],
                                 style: (TextStyle(
                                     fontSize: 15, color: Colors.grey)))
                           ]),
@@ -501,11 +560,12 @@ class MultChoiceState extends State<MultChoiceCl> {
                               widget.correctCounter[widget.questionId] == 3) {
                             widget.correctCounter[widget.questionId] = 0;
                             await updateVocableTable(VocableTable(
-                                id: vocableList[widget.questionId]['id'],
+                                id: vocableLearnList[widget.questionId]['id'],
                                 section: section + 1,
-                                translation: vocableList[widget.questionId]
+                                translation: vocableLearnList[widget.questionId]
                                     ['translation'],
-                                word: vocableList[widget.questionId]['word']));
+                                word: vocableLearnList[widget.questionId]
+                                    ['word']));
                           } else {
                             widget.correctCounter[widget.questionId] =
                                 widget.correctCounter[widget.questionId] + 1;
@@ -528,10 +588,12 @@ class MultChoiceState extends State<MultChoiceCl> {
                           crossAxisAlignment: CrossAxisAlignment.center,
                           children: [
                             Text(
-                              vocableList[multChoiceList[1]][widget.answerMode],
+                              vocableLearnList[multChoiceList[1]]
+                                  [widget.answerMode],
                               style: TextStyle(fontSize: 20),
                             ),
-                            Text(vocableList[multChoiceList[1]][answerNote],
+                            Text(
+                                vocableLearnList[multChoiceList[1]][answerNote],
                                 style: (TextStyle(
                                     fontSize: 15, color: Colors.grey)))
                           ]),
@@ -542,11 +604,12 @@ class MultChoiceState extends State<MultChoiceCl> {
                               widget.correctCounter[widget.questionId] == 3) {
                             widget.correctCounter[widget.questionId] = 0;
                             await updateVocableTable(VocableTable(
-                                id: vocableList[widget.questionId]['id'],
+                                id: vocableLearnList[widget.questionId]['id'],
                                 section: section + 1,
-                                translation: vocableList[widget.questionId]
+                                translation: vocableLearnList[widget.questionId]
                                     ['translation'],
-                                word: vocableList[widget.questionId]['word']));
+                                word: vocableLearnList[widget.questionId]
+                                    ['word']));
                           } else {
                             widget.correctCounter[widget.questionId] =
                                 widget.correctCounter[widget.questionId] + 1;
@@ -569,10 +632,12 @@ class MultChoiceState extends State<MultChoiceCl> {
                           crossAxisAlignment: CrossAxisAlignment.center,
                           children: [
                             Text(
-                              vocableList[multChoiceList[2]][widget.answerMode],
+                              vocableLearnList[multChoiceList[2]]
+                                  [widget.answerMode],
                               style: TextStyle(fontSize: 20),
                             ),
-                            Text(vocableList[multChoiceList[2]][answerNote],
+                            Text(
+                                vocableLearnList[multChoiceList[2]][answerNote],
                                 style: (TextStyle(
                                     fontSize: 15, color: Colors.grey)))
                           ]),
@@ -583,11 +648,12 @@ class MultChoiceState extends State<MultChoiceCl> {
                               widget.correctCounter[widget.questionId] == 3) {
                             widget.correctCounter[widget.questionId] = 0;
                             await updateVocableTable(VocableTable(
-                                id: vocableList[widget.questionId]['id'],
+                                id: vocableLearnList[widget.questionId]['id'],
                                 section: section + 1,
-                                translation: vocableList[widget.questionId]
+                                translation: vocableLearnList[widget.questionId]
                                     ['translation'],
-                                word: vocableList[widget.questionId]['word']));
+                                word: vocableLearnList[widget.questionId]
+                                    ['word']));
                           } else {
                             widget.correctCounter[widget.questionId] =
                                 widget.correctCounter[widget.questionId] + 1;
@@ -610,10 +676,12 @@ class MultChoiceState extends State<MultChoiceCl> {
                           crossAxisAlignment: CrossAxisAlignment.center,
                           children: [
                             Text(
-                              vocableList[multChoiceList[3]][widget.answerMode],
+                              vocableLearnList[multChoiceList[3]]
+                                  [widget.answerMode],
                               style: TextStyle(fontSize: 20),
                             ),
-                            Text(vocableList[multChoiceList[3]][answerNote],
+                            Text(
+                                vocableLearnList[multChoiceList[3]][answerNote],
                                 style: (TextStyle(
                                     fontSize: 15, color: Colors.grey)))
                           ]),
@@ -624,11 +692,12 @@ class MultChoiceState extends State<MultChoiceCl> {
                               widget.correctCounter[widget.questionId] == 3) {
                             widget.correctCounter[widget.questionId] = 0;
                             await updateVocableTable(VocableTable(
-                                id: vocableList[widget.questionId]['id'],
+                                id: vocableLearnList[widget.questionId]['id'],
                                 section: section + 1,
-                                translation: vocableList[widget.questionId]
+                                translation: vocableLearnList[widget.questionId]
                                     ['translation'],
-                                word: vocableList[widget.questionId]['word']));
+                                word: vocableLearnList[widget.questionId]
+                                    ['word']));
                           } else {
                             widget.correctCounter[widget.questionId] =
                                 widget.correctCounter[widget.questionId] + 1;
@@ -702,11 +771,6 @@ class LettersOrderState extends State<LettersOrder> {
   Widget build(BuildContext context) {
     return Scaffold(
         resizeToAvoidBottomInset: false,
-        appBar: AppBar(
-          title: Text("learn",
-              style: TextStyle(fontSize: fontSize, color: Colors.white)),
-          backgroundColor: Colors.amber,
-        ),
         body: SingleChildScrollView(
             child: Column(
           children: [
@@ -724,7 +788,7 @@ class LettersOrderState extends State<LettersOrder> {
 
   //LetterOrder
   Widget letterOrder() {
-    String answer = vocableList[widget.questionId][widget.answerMode];
+    String answer = vocableLearnList[widget.questionId][widget.answerMode];
 
     print(widget.correctCounter);
     if (answered == false) {
@@ -752,7 +816,7 @@ class LettersOrderState extends State<LettersOrder> {
     if (answered == true && lettersList.length == 0) {
       answered = false;
       print('bottom');
-      speakWord(vocableList[widget.questionId]['translation']);
+      speakWord(vocableLearnList[widget.questionId]['translation']);
       timer = new Timer.periodic(
           Duration(seconds: 1),
           (Timer t) => setState(() {
@@ -768,7 +832,7 @@ class LettersOrderState extends State<LettersOrder> {
             child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: <Widget>[
-                  Text(vocableList[widget.questionId][widget.questionMode],
+                  Text(vocableLearnList[widget.questionId][widget.questionMode],
                       style:
                           TextStyle(fontSize: 25, fontWeight: FontWeight.bold)),
                 ])),
@@ -812,23 +876,26 @@ class LettersOrderState extends State<LettersOrder> {
 
                             if (lettersList.length == 0 && answered == true) {
                               if (answerStr ==
-                                  vocableList[widget.questionId]
+                                  vocableLearnList[widget.questionId]
                                       [widget.answerMode]) {
                                 answerColor = Colors.green;
-                                if (vocableList[widget.questionId]['section'] <
+                                if (vocableLearnList[widget.questionId]
+                                            ['section'] <
                                         3 &&
                                     widget.correctCounter[widget.questionId] ==
                                         5) {
                                   widget.correctCounter[widget.questionId] = 0;
                                   await updateVocableTable(VocableTable(
-                                      id: vocableList[widget.questionId]['id'],
-                                      section: vocableList[widget.questionId]
-                                              ['section'] +
-                                          1,
+                                      id: vocableLearnList[widget.questionId]
+                                          ['id'],
+                                      section:
+                                          vocableLearnList[widget.questionId]
+                                                  ['section'] +
+                                              1,
                                       translation:
-                                          vocableList[widget.questionId]
+                                          vocableLearnList[widget.questionId]
                                               ['translation'],
-                                      word: vocableList[widget.questionId]
+                                      word: vocableLearnList[widget.questionId]
                                           ['word']));
                                 } else {
                                   widget.correctCounter[widget.questionId] =
@@ -1371,17 +1438,17 @@ class LettersOrderState extends State<LettersOrder> {
     Color textcolor = Colors.black;
     String iscorrect = '';
     String correctanswer = '';
-    String answer = vocableList[widget.questionId][widget.answerMode];
+    String answer = vocableLearnList[widget.questionId][widget.answerMode];
 
-    if (answerStr == vocableList[widget.questionId][widget.answerMode]) {
+    if (answerStr == vocableLearnList[widget.questionId][widget.answerMode]) {
       textcolor = Colors.green;
       iscorrect = 'Correct!';
       correctanswer = '';
     } else {
       textcolor = Colors.red;
       iscorrect = 'Wrong!';
-      correctanswer =
-          vocableList[widget.questionId][widget.questionMode] + ' = $answer \n';
+      correctanswer = vocableLearnList[widget.questionId][widget.questionMode] +
+          ' = $answer \n';
     }
     return showModalBottomSheet<void>(
         enableDrag: false,
@@ -1475,11 +1542,6 @@ class EnterAnswerState extends State<EnterAnswerCl> {
   Widget build(BuildContext context) {
     return Scaffold(
         resizeToAvoidBottomInset: false,
-        appBar: AppBar(
-          title: Text("learn",
-              style: TextStyle(fontSize: fontSize, color: Colors.white)),
-          backgroundColor: Colors.amber,
-        ),
         body: SingleChildScrollView(
             child: Column(
           children: [
@@ -1503,7 +1565,7 @@ class EnterAnswerState extends State<EnterAnswerCl> {
     } else {
       print('bottom');
       answered = false;
-      speakWord(vocableList[widget.questionId]['translation']);
+      speakWord(vocableLearnList[widget.questionId]['translation']);
       timer = new Timer.periodic(
           Duration(seconds: 2),
           (Timer t) => setState(() {
@@ -1518,7 +1580,7 @@ class EnterAnswerState extends State<EnterAnswerCl> {
             child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: <Widget>[
-                  Text(vocableList[widget.questionId][widget.questionMode],
+                  Text(vocableLearnList[widget.questionId][widget.questionMode],
                       style:
                           TextStyle(fontSize: 25, fontWeight: FontWeight.bold)),
                 ])),
@@ -1542,11 +1604,11 @@ class EnterAnswerState extends State<EnterAnswerCl> {
                 answered = true;
 
                 if (value ==
-                    vocableList[widget.questionId][widget.answerMode]) {
+                    vocableLearnList[widget.questionId][widget.answerMode]) {
                   answerColor = Colors.green;
                 } else {
                   correctanswer =
-                      vocableList[widget.questionId][widget.answerMode];
+                      vocableLearnList[widget.questionId][widget.answerMode];
                   answerColor = Colors.red;
                 }
                 setState(() {});

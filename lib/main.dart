@@ -70,6 +70,7 @@ class MyHomePage extends StatefulWidget {
 //home screen
 class _MyHomePageState extends State<MyHomePage> {
   int indexScreen;
+  
   initState() {
     super.initState();
     indexScreen = 0;
@@ -111,6 +112,8 @@ class _MyHomePageState extends State<MyHomePage> {
       // } else if (index == 1) {
       //   return Sections();
     } else {
+      print('IIIIIIIIII');
+      rebuildScreen = true;
       return Learn();
     }
   }
