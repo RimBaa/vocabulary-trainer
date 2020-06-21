@@ -73,6 +73,7 @@ class ListVocabState extends State<ListVocab> {
     );
   }
 
+// choose a language to learn
   _showLanguages(BuildContext context) {
     showDialog(
         context: context,
@@ -116,6 +117,7 @@ class ListVocabState extends State<ListVocab> {
         });
   }
 
+// flatbutton to add a vocable
   addButton(BuildContext context, bool delete) {
     if (delete == false) {
       return FloatingActionButton(
@@ -132,6 +134,7 @@ class ListVocabState extends State<ListVocab> {
     }
   }
 
+// delete multiple files, export or import a database
   selectPopupMenu(BuildContext context, bool delete) {
     if (delete == false) {
       return PopupMenuButton(onSelected: (value) async {
@@ -169,6 +172,7 @@ class ListVocabState extends State<ListVocab> {
     }
   }
 
+// export database and save it in the Download file
   exportData(BuildContext context) {
     if (vocableList != null) {
       var data = <List>[];
@@ -185,17 +189,13 @@ class ListVocabState extends State<ListVocab> {
         return index;
       }
 
+//convert vocable list to csvList
       for (var map in vocableList) {
-        // This list might grow if a new key is found
         var dataRow = List(keyIndexMap.length);
-        // Fix missing key
         map.forEach((key, value) {
           var keyIndex = keyIndexMap[key];
           if (keyIndex == null) {
-            // New key is found
-            // Add it and fix previous data
             keyIndex = _addKey(key);
-            // grow our list
             dataRow = List.from(dataRow, growable: true)..add(value);
           } else {
             dataRow[keyIndex] = value;
@@ -204,19 +204,18 @@ class ListVocabState extends State<ListVocab> {
         data.add(dataRow);
       }
 
-      //  print(data);
-
       ListToCsvConverter converter = const ListToCsvConverter();
       String csvList = converter.convert(data);
       writeFile(csvList);
     }
   }
 
+// save database in Download file
   writeFile(String csv) async {
     final directory = await getTemporaryDirectory();
     final downdir = await ExtStorage.getExternalStoragePublicDirectory(
         ExtStorage.DIRECTORY_DOWNLOADS);
-    final pathOfTheFileToWrite = downdir + "/vocableDatabase.csv";
+    final pathOfTheFileToWrite = downdir + "/vocableDatabase1.csv";
     File file = File(pathOfTheFileToWrite);
 
     var status = await Permission.storage.status;
@@ -234,14 +233,26 @@ class ListVocabState extends State<ListVocab> {
     // );
   }
 
+// import a vocable list
   importData() async {
-    File file = await FilePicker.getFile(allowedExtensions: ['csv'],type: FileType.custom);
-    final csvInput = file.openRead();
-    final importDatabase = await csvInput
-        .transform(utf8.decoder)
-        .transform(new CsvToListConverter())
-        .toList();
+    List<List<dynamic>> dataList = [];
 
+    File file = await FilePicker.getFile(
+        allowedExtensions: ['csv'], type: FileType.custom);
+    final csvInput = file.openRead();
+
+// read csv file, transform to list
+    csvInput.transform(utf8.decoder).transform(new LineSplitter()).listen(
+        (String line) {
+      List row = line.split(',');
+      dataList.add(row);
+    }, onDone: () {
+      print('File is now closed.');
+    }, onError: (e) {
+      print(e.toString());
+    });
+
+// delete current database
     Database db = await database;
     await db.transaction((txn) async {
       var batch = txn.batch();
@@ -249,13 +260,23 @@ class ListVocabState extends State<ListVocab> {
       await batch.commit();
     });
 
-    insertAll(importDatabase);
+    insertAll(dataList, db);
   }
 
-  insertAll(List<List<dynamic>> data) async {
+// insert all lines of the csv file to the new database
+  insertAll(List<List<dynamic>> data, Database db) async {
     for (var row in data) {
+      print(row);
       await addVoc2Table(row[1], row[2], row[3], row[4]);
     }
+    List keys = [
+      'word',
+      'wordnote',
+      'translation',
+      'translationnote',
+      'section'
+    ];
+
     getVocableList().whenComplete(() {
       setState(() {});
     });
@@ -299,10 +320,11 @@ class ListVocabState extends State<ListVocab> {
                 child: Card(
                   child: InkWell(
                     child: Container(
-                      height: 70,
+                      height: 110,
                       child: Row(
                           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                          children: withOrWithoutCheckbox(deleteBool, index)),
+                          children: withOrWithoutCheckbox(
+                              deleteBool, index, context)),
                     ),
                     onTap: () {
                       print(index);
@@ -321,9 +343,10 @@ class ListVocabState extends State<ListVocab> {
     }
   }
 
+//speak word to learn
   speakWord(String word) async {
     FlutterTts flutterTts = FlutterTts();
-    flutterTts.setLanguage('ko');
+    flutterTts.setLanguage(languageCode);
     flutterTts.setPitch(1.0);
     await flutterTts.speak(word);
   }
@@ -333,16 +356,21 @@ class ListVocabState extends State<ListVocab> {
   }
 
 // adding checkbox for deleting vocables if delete has been pressed
-  withOrWithoutCheckbox(bool delete, int index) {
+  withOrWithoutCheckbox(bool delete, int index, BuildContext context) {
     if (delete == false) {
       return (<Widget>[
         Container(
-            width: 50,
+            width: MediaQuery.of(context).size.width * 0.5 - 10,
             child:
                 Column(mainAxisAlignment: MainAxisAlignment.center, children: [
-              Text(vocableList[index]['word'], style: TextStyle(fontSize: 18)),
+              Text(vocableList[index]['word'],
+                  style: TextStyle(fontSize: 17),
+                  overflow: TextOverflow.clip,
+                  textAlign: TextAlign.center),
               Text(vocableList[index]['wordNote'],
-                  style: TextStyle(fontSize: 11, color: Colors.grey))
+                  style: TextStyle(
+                      fontSize: 11,
+                      color: Colors.grey),textAlign: TextAlign.center)
             ])),
         Container(
             width: 10,
@@ -352,13 +380,16 @@ class ListVocabState extends State<ListVocab> {
               thickness: 0.5,
             )),
         Container(
-            width: 50,
+            width: MediaQuery.of(context).size.width * 0.5 - 10,
             child:
                 Column(mainAxisAlignment: MainAxisAlignment.center, children: [
               Text(vocableList[index]['translation'],
-                  style: TextStyle(fontSize: 18)),
+                  style: TextStyle(fontSize: 17),
+                  overflow: TextOverflow.clip,
+                  textAlign: TextAlign.center),
               Text(vocableList[index]['translationNote'],
-                  style: TextStyle(fontSize: 11, color: Colors.grey))
+                  style: TextStyle(fontSize: 11, color: Colors.grey),
+                  textAlign: TextAlign.center)
             ]))
       ]);
     } else {
@@ -368,14 +399,17 @@ class ListVocabState extends State<ListVocab> {
       if (select2del.length > 0) {
         return (<Widget>[
           Container(
-              width: 50,
+              width: MediaQuery.of(context).size.width * 0.3,
               child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Text(vocableList[index]['word'],
-                        style: TextStyle(fontSize: 18)),
+                        style: TextStyle(fontSize: 17),
+                        overflow: TextOverflow.clip,
+                        textAlign: TextAlign.center),
                     Text(vocableList[index]['wordNote'],
-                        style: TextStyle(fontSize: 11, color: Colors.grey))
+                        style: TextStyle(fontSize: 11, color: Colors.grey),
+                        textAlign: TextAlign.center)
                   ])),
           Container(
               width: 10,
@@ -385,14 +419,17 @@ class ListVocabState extends State<ListVocab> {
                 thickness: 0.5,
               )),
           Container(
-              width: 50,
+              width: MediaQuery.of(context).size.width * 0.2,
               child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Text(vocableList[index]['translation'],
-                        style: TextStyle(fontSize: 18)),
+                        style: TextStyle(fontSize: 17),
+                        overflow: TextOverflow.clip,
+                        textAlign: TextAlign.center),
                     Text(vocableList[index]['translationNote'],
-                        style: TextStyle(fontSize: 11, color: Colors.grey))
+                        style: TextStyle(fontSize: 11, color: Colors.grey),
+                        textAlign: TextAlign.center)
                   ])),
           Container(
               width: 20,
@@ -417,7 +454,7 @@ class ListVocabState extends State<ListVocab> {
       return Icon(Icons.check_box_outline_blank);
   }
 
-//bottom Navigator: cancel and delete options for deleting vocables
+//cancel and delete options for deleting vocables at the bottom
   _addRowDel(delete) {
     if (delete == true) {
       return Row(
@@ -450,7 +487,7 @@ class ListVocabState extends State<ListVocab> {
       return Row();
   }
 
-// adding vocables
+//dialog to add vocables
   Future<String> addVocable(BuildContext context) async {
     String word = '';
     String translation = '';
@@ -514,6 +551,7 @@ class ListVocabState extends State<ListVocab> {
         });
   }
 
+// dialog to change existing vocables
   Future<String> editVoc(BuildContext context, int index) async {
     String word = vocableList[index]['word'];
     String translation = vocableList[index]['translation'];
@@ -640,7 +678,6 @@ class ListVocabState extends State<ListVocab> {
     Database db = await database;
     idList = [];
     vocableList = await db.query(languageCode);
-    // print(await vocable());
 
     for (int i = 0; i < vocableList.length; i++) {
       idList.add(vocableList[i]['id']);
@@ -648,7 +685,7 @@ class ListVocabState extends State<ListVocab> {
     return idList;
   }
 
-//get vocable list of current language of chosen sections
+//get vocable list of chosen sections
   getvocableLearnList() async {
     Database db = await database;
     print(sectionNum);
@@ -660,7 +697,6 @@ class ListVocabState extends State<ListVocab> {
 }
 
 //database methods
-
 Future<void> insertVocable(VocableTable vocable) async {
   Database db;
 
