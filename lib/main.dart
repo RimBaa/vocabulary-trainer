@@ -28,9 +28,9 @@ class VocabularyState extends State<VocabularyApp> {
   @override
   void initState() {
     super.initState();
-    getDB().whenComplete((){setState(() {
-      
-    });});
+    getDB().whenComplete(() {
+      setState(() {});
+    });
   }
 
   getDB() async {
@@ -70,7 +70,7 @@ class MyHomePage extends StatefulWidget {
 //home screen
 class _MyHomePageState extends State<MyHomePage> {
   int indexScreen;
-  
+
   initState() {
     super.initState();
     indexScreen = 0;
@@ -79,6 +79,7 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      resizeToAvoidBottomPadding: false,
       body: _setScreen(indexScreen, context),
       //drawer: createDrawer(context),
       bottomNavigationBar: bottomNaviBar(context),

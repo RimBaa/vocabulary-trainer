@@ -204,7 +204,7 @@ class ListVocabState extends State<ListVocab> {
         data.add(dataRow);
       }
 
-      ListToCsvConverter converter = const ListToCsvConverter();
+      ListToCsvConverter converter = const ListToCsvConverter(fieldDelimiter: ';');
       String csvList = converter.convert(data);
       writeFile(csvList);
     }
@@ -215,7 +215,7 @@ class ListVocabState extends State<ListVocab> {
     final directory = await getTemporaryDirectory();
     final downdir = await ExtStorage.getExternalStoragePublicDirectory(
         ExtStorage.DIRECTORY_DOWNLOADS);
-    final pathOfTheFileToWrite = downdir + "/vocableDatabase1.csv";
+    final pathOfTheFileToWrite = downdir + "/vocableData.csv";
     File file = File(pathOfTheFileToWrite);
 
     var status = await Permission.storage.status;
@@ -227,6 +227,7 @@ class ListVocabState extends State<ListVocab> {
 
     print(pathOfTheFileToWrite);
 
+//share csv file 
     // await FlutterShare.shareFile(
     //   title: 'Export vocabulary',
     //   filePath: pathOfTheFileToWrite,
@@ -244,7 +245,7 @@ class ListVocabState extends State<ListVocab> {
 // read csv file, transform to list
     csvInput.transform(utf8.decoder).transform(new LineSplitter()).listen(
         (String line) {
-      List row = line.split(',');
+      List row = line.split(';');
       dataList.add(row);
     }, onDone: () {
       print('File is now closed.');
@@ -269,13 +270,6 @@ class ListVocabState extends State<ListVocab> {
       print(row);
       await addVoc2Table(row[1], row[2], row[3], row[4]);
     }
-    List keys = [
-      'word',
-      'wordnote',
-      'translation',
-      'translationnote',
-      'section'
-    ];
 
     getVocableList().whenComplete(() {
       setState(() {});
@@ -690,7 +684,7 @@ class ListVocabState extends State<ListVocab> {
     Database db = await database;
     print(sectionNum);
     vocableLearnList = await db.query(languageCode,
-        where: 'section IN (?,?,?)', whereArgs: sectionNum);
+        where: 'section IN (?,?,?,?,?)', whereArgs: sectionNum);
 
     print(vocableLearnList);
   }

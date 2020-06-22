@@ -46,7 +46,7 @@ class LearnState extends State<Learn> {
     showSettings = true;
     progressvalue = 0.0;
     progresscounter = 0;
-    chosenSectionList = [true, true, true];
+    chosenSectionList = [true, true, true, true, true];
     vocListObj.getvocableLearnList().whenComplete(() {
       setState(() {
         print("init");
@@ -95,6 +95,7 @@ class LearnState extends State<Learn> {
       callback();
     }
     return Scaffold(
+      resizeToAvoidBottomPadding: false,
       appBar: AppBar(
           title: Text(language, style: TextStyle(fontSize: fontSize)),
           backgroundColor: Colors.amber,
@@ -217,6 +218,54 @@ class LearnState extends State<Learn> {
                                     setState(() {});
                                   });
                                 }))
+                      ]),
+                      Row(children: <Widget>[
+                        Text('section 4'),
+                        Container(
+                            padding: EdgeInsets.only(left: 50.0),
+                            child: Checkbox(
+                                value: chosenSectionList[3],
+                                onChanged: (value) {
+                                  chosenSectionList[2] = !chosenSectionList[2];
+                                  if (chosenSectionList[2] == true) {
+                                    if (!sectionNum.contains(4)) {
+                                      sectionNum.add(4);
+                                    }
+                                  } else {
+                                    if (sectionNum.contains(4)) {
+                                      sectionNum.remove(4);
+                                    }
+                                  }
+                                  vocListObj
+                                      .getvocableLearnList()
+                                      .whenComplete(() {
+                                    setState(() {});
+                                  });
+                                }))
+                      ]),
+                      Row(children: <Widget>[
+                        Text('section 5'),
+                        Container(
+                            padding: EdgeInsets.only(left: 50.0),
+                            child: Checkbox(
+                                value: chosenSectionList[4],
+                                onChanged: (value) {
+                                  chosenSectionList[2] = !chosenSectionList[2];
+                                  if (chosenSectionList[2] == true) {
+                                    if (!sectionNum.contains(5)) {
+                                      sectionNum.add(5);
+                                    }
+                                  } else {
+                                    if (sectionNum.contains(5)) {
+                                      sectionNum.remove(5);
+                                    }
+                                  }
+                                  vocListObj
+                                      .getvocableLearnList()
+                                      .whenComplete(() {
+                                    setState(() {});
+                                  });
+                                }))
                       ])
                     ],
                   )
@@ -291,6 +340,7 @@ class LearnState extends State<Learn> {
       print('progresscounter $progresscounter');
       if (progresscounter <= vocablenumber) {
         counter += 1;
+        print('$questionList, $counter');
         return new MultChoiceCl(questionList[counter], counter, answerMode,
             questionMode, callbackSet, correctCounter, progressvalue);
       } else if (progresscounter <= vocablenumber * 2) {
@@ -479,7 +529,6 @@ class MultChoiceState extends State<MultChoiceCl> {
 // multiple choice learn option
 // after 6 correct answers section will be updated till section 3
   Widget multipleChoice() {
-    int section = 1;
     String questionNote = '';
     String answerNote = '';
     print(widget.correctCounter);
@@ -506,7 +555,6 @@ class MultChoiceState extends State<MultChoiceCl> {
       }
 
       multChoiceList.shuffle();
-      section = vocableLearnList[widget.questionId]['section'];
     } else {
       answered = false;
       print('bottom');
@@ -563,20 +611,9 @@ class MultChoiceState extends State<MultChoiceCl> {
                       onTap: () async {
                         if (widget.questionId == multChoiceList[0]) {
                           dynColor[0] = Colors.greenAccent;
-                          if (section < 3 &&
-                              widget.correctCounter[widget.counter] == 3) {
-                            widget.correctCounter[widget.counter] = 0;
-                            await updateVocableTable(VocableTable(
-                                id: vocableLearnList[widget.questionId]['id'],
-                                section: section + 1,
-                                translation: vocableLearnList[widget.questionId]
-                                    ['translation'],
-                                word: vocableLearnList[widget.questionId]
-                                    ['word']));
-                          } else {
-                            widget.correctCounter[widget.counter] =
-                                widget.correctCounter[widget.counter] + 1;
-                          }
+
+                          widget.correctCounter[widget.counter] =
+                              widget.correctCounter[widget.counter] + 1;
                         } else {
                           dynColor[0] = Colors.redAccent;
                           dynColor[idPosition] = Colors.greenAccent;
@@ -607,20 +644,9 @@ class MultChoiceState extends State<MultChoiceCl> {
                       onTap: () async {
                         if (widget.questionId == multChoiceList[1]) {
                           dynColor[1] = Colors.greenAccent;
-                          if (section < 3 &&
-                              widget.correctCounter[widget.counter] == 3) {
-                            widget.correctCounter[widget.counter] = 0;
-                            await updateVocableTable(VocableTable(
-                                id: vocableLearnList[widget.questionId]['id'],
-                                section: section + 1,
-                                translation: vocableLearnList[widget.questionId]
-                                    ['translation'],
-                                word: vocableLearnList[widget.questionId]
-                                    ['word']));
-                          } else {
-                            widget.correctCounter[widget.counter] =
-                                widget.correctCounter[widget.counter] + 1;
-                          }
+
+                          widget.correctCounter[widget.counter] =
+                              widget.correctCounter[widget.counter] + 1;
                         } else {
                           dynColor[1] = Colors.redAccent;
                           dynColor[idPosition] = Colors.greenAccent;
@@ -651,20 +677,9 @@ class MultChoiceState extends State<MultChoiceCl> {
                       onTap: () async {
                         if (widget.questionId == multChoiceList[2]) {
                           dynColor[2] = Colors.greenAccent;
-                          if (section < 3 &&
-                              widget.correctCounter[widget.counter] == 3) {
-                            widget.correctCounter[widget.counter] = 0;
-                            await updateVocableTable(VocableTable(
-                                id: vocableLearnList[widget.questionId]['id'],
-                                section: section + 1,
-                                translation: vocableLearnList[widget.questionId]
-                                    ['translation'],
-                                word: vocableLearnList[widget.questionId]
-                                    ['word']));
-                          } else {
-                            widget.correctCounter[widget.counter] =
-                                widget.correctCounter[widget.counter] + 1;
-                          }
+
+                          widget.correctCounter[widget.counter] =
+                              widget.correctCounter[widget.counter] + 1;
                         } else {
                           dynColor[2] = Colors.redAccent;
                           dynColor[idPosition] = Colors.greenAccent;
@@ -695,20 +710,9 @@ class MultChoiceState extends State<MultChoiceCl> {
                       onTap: () async {
                         if (widget.questionId == multChoiceList[3]) {
                           dynColor[3] = Colors.greenAccent;
-                          if (section < 3 &&
-                              widget.correctCounter[widget.counter] == 3) {
-                            widget.correctCounter[widget.counter] = 0;
-                            await updateVocableTable(VocableTable(
-                                id: vocableLearnList[widget.questionId]['id'],
-                                section: section + 1,
-                                translation: vocableLearnList[widget.questionId]
-                                    ['translation'],
-                                word: vocableLearnList[widget.questionId]
-                                    ['word']));
-                          } else {
-                            widget.correctCounter[widget.counter] =
-                                widget.correctCounter[widget.counter] + 1;
-                          }
+
+                          widget.correctCounter[widget.counter] =
+                              widget.correctCounter[widget.counter] + 1;
                         } else {
                           dynColor[3] = Colors.redAccent;
                           dynColor[idPosition] = Colors.greenAccent;
@@ -897,28 +901,9 @@ class LettersOrderState extends State<LettersOrder> {
                                   vocableLearnList[widget.questionId]
                                       [widget.answerMode]) {
                                 answerColor = Colors.green;
-                                if (vocableLearnList[widget.questionId]
-                                            ['section'] <
-                                        3 &&
-                                    widget.correctCounter[widget.counter] ==
-                                        3) {
-                                  widget.correctCounter[widget.counter] = 0;
-                                  await updateVocableTable(VocableTable(
-                                      id: vocableLearnList[widget.questionId]
-                                          ['id'],
-                                      section:
-                                          vocableLearnList[widget.questionId]
-                                                  ['section'] +
-                                              1,
-                                      translation:
-                                          vocableLearnList[widget.questionId]
-                                              ['translation'],
-                                      word: vocableLearnList[widget.questionId]
-                                          ['word']));
-                                } else {
-                                  widget.correctCounter[widget.counter] =
-                                      widget.correctCounter[widget.counter] + 1;
-                                }
+
+                                widget.correctCounter[widget.counter] =
+                                    widget.correctCounter[widget.counter] + 1;
                               } else {
                                 answerColor = Colors.red;
                                 correctanswer = answer;
@@ -1583,6 +1568,7 @@ class EnterAnswerState extends State<EnterAnswerCl> {
 
   Widget enterAnswer() {
     if (answered == false) {
+      print('MMMMMMMMM');
       _controller.clear();
       correctanswer = '';
       answerColor = Colors.grey[300];
@@ -1635,7 +1621,7 @@ class EnterAnswerState extends State<EnterAnswerCl> {
                 if (value ==
                     vocableLearnList[widget.questionId][widget.answerMode]) {
                   answerColor = Colors.green;
-                  if (vocableLearnList[widget.questionId]['section'] < 3 &&
+                  if (vocableLearnList[widget.questionId]['section'] < 5 &&
                       widget.correctCounter[widget.counter] == 2) {
                     widget.correctCounter[widget.counter] = 3;
                     updateVocableTable(VocableTable(
@@ -1662,7 +1648,6 @@ class EnterAnswerState extends State<EnterAnswerCl> {
                   correctanswer =
                       vocableLearnList[widget.questionId][widget.answerMode];
                   answerColor = Colors.red;
-                  setState(() {});
                 }
               },
             ))
