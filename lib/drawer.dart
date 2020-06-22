@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:vocabulary/global_vars.dart';
-import 'vocable.dart';
-//import 'language.dart';
+import 'package:vocabulary/vocabulary/vocable.dart';
+
 import 'section.dart';
 
 createDrawer(context) {

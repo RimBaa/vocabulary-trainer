@@ -1,12 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-//import 'package:sqflite/sqflite.dart';
-//import 'package:vocabulary/section.dart';
+import 'package:vocabulary/learn/learn.dart';
+import 'package:vocabulary/vocabulary/database.dart';
+import 'package:vocabulary/vocabulary/vocable.dart';
 import 'global_vars.dart';
-//import 'language.dart';
-import 'vocable.dart';
-//import 'package:path/path.dart';
-import 'learn.dart';
+
 
 void main() {
   //SharedPreferences.setMockInitialValues({});
@@ -107,13 +105,11 @@ class _MyHomePageState extends State<MyHomePage> {
     );
   }
 
+//handle screen switch
   _setScreen(int index, context) {
     if (index == 0) {
       return ListVocab();
-      // } else if (index == 1) {
-      //   return Sections();
     } else {
-      print('IIIIIIIIII');
       rebuildScreen = true;
       return Learn();
     }
