@@ -133,7 +133,7 @@ class LettersOrderState extends State<LettersOrder> {
         Container(
             padding: EdgeInsets.only(
                 top: MediaQuery.of(context).size.height * 0.005),
-            width: MediaQuery.of(context).size.width * 0.5,
+            width: MediaQuery.of(context).size.width * 0.8,
             decoration: BoxDecoration(
                 border:
                     Border(bottom: BorderSide(width: 3.0, color: answerColor))),

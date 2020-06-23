@@ -28,6 +28,7 @@ class ListVocabState extends State<ListVocab> {
   List<List<String>> languagesList = [
     ['English', 'en'],
     ['French', 'fr'],
+    ['German', 'de'],
     ['Korean', 'ko'],
     ['Portuguese', 'pt'],
     ['Spanish', 'es']
@@ -35,8 +36,6 @@ class ListVocabState extends State<ListVocab> {
 
   void initState() {
     super.initState();
-    // language = 'Korean';
-    // languageCode = 'ko';
     deleteBool = false;
   }
 
@@ -65,7 +64,6 @@ class ListVocabState extends State<ListVocab> {
         editScreen(context),
         new Expanded(child: voclist(context))
       ]),
-      // body: voclist(context),
       bottomNavigationBar: BottomAppBar(
         child: _addRowDel(deleteBool),
       ),
@@ -685,6 +683,18 @@ class ListVocabState extends State<ListVocab> {
     vocableLearnList = await db.query(languageCode,
         where: 'section IN (?,?,?,?,?)', whereArgs: sectionNum);
 
-    print(vocableLearnList);
+    //print(vocableLearnList);
+  }
+
+  //get ids of vocable list of current language
+  getVocableLearnListId() async {
+    idLearnList = [];
+    await getvocableLearnList();
+
+    for (int i = 0; i < vocableLearnList.length; i++) {
+      idLearnList.add(vocableLearnList[i]['id']);
+    }
+   
+    return idLearnList;
   }
 }

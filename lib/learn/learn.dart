@@ -37,7 +37,7 @@ class LearnState extends State<Learn> {
   int vocablenumber;
   double addprogress;
   int counter;
-  List<bool> chosenSectionList;
+  //List<bool> chosenSectionList;
   ListVocabState vocListObj = new ListVocabState();
 
   @override
@@ -45,11 +45,11 @@ class LearnState extends State<Learn> {
     super.initState();
     rebuildScreen = false;
     counter = -1;
-    sectionNum = [1, 2, 3];
+
     showSettings = true;
     progressvalue = 0.0;
     progresscounter = 0;
-    chosenSectionList = [true, true, true, true, true];
+
     vocListObj.getvocableLearnList().whenComplete(() {
       setState(() {
         print("init");
@@ -64,6 +64,7 @@ class LearnState extends State<Learn> {
       progresscounter = 0;
       showSettings = true;
       correctCounter = [];
+      questionList = [];
       Navigator.pop(context);
     });
   }
@@ -76,6 +77,7 @@ class LearnState extends State<Learn> {
       showSettings = true;
       progresscounter = 0;
       correctCounter = [];
+      questionList = [];
     });
   }
 
@@ -86,13 +88,13 @@ class LearnState extends State<Learn> {
         progressvalue += addprogress;
         print(progressvalue);
       }
+   
       newSession = false;
     });
   }
 
   @override
   Widget build(BuildContext context) {
-    print('AAAAAAA');
     if (rebuildScreen && !newSession) {
       rebuildScreen = false;
       callback();
@@ -229,7 +231,7 @@ class LearnState extends State<Learn> {
                             child: Checkbox(
                                 value: chosenSectionList[3],
                                 onChanged: (value) {
-                                  chosenSectionList[2] = !chosenSectionList[2];
+                                  chosenSectionList[3] = !chosenSectionList[3];
                                   if (chosenSectionList[2] == true) {
                                     if (!sectionNum.contains(4)) {
                                       sectionNum.add(4);
@@ -253,8 +255,8 @@ class LearnState extends State<Learn> {
                             child: Checkbox(
                                 value: chosenSectionList[4],
                                 onChanged: (value) {
-                                  chosenSectionList[2] = !chosenSectionList[2];
-                                  if (chosenSectionList[2] == true) {
+                                  chosenSectionList[4] = !chosenSectionList[4];
+                                  if (chosenSectionList[4] == true) {
                                     if (!sectionNum.contains(5)) {
                                       sectionNum.add(5);
                                     }
@@ -299,6 +301,7 @@ class LearnState extends State<Learn> {
         ));
       } else {
         Random rnd = new Random();
+        vocListObj.getVocableLearnListId();
 
         while (questionList.length < vocablenumber) {
           int question = rnd.nextInt(vocableLearnList.length);
@@ -309,7 +312,6 @@ class LearnState extends State<Learn> {
         questionId = questionList[0];
 
         print(questionId);
-
         print(questionList);
         wordOrtransl = rnd.nextInt(2);
 
@@ -380,5 +382,3 @@ class LearnState extends State<Learn> {
     return [counterPos, counterWrong];
   }
 }
-
-

@@ -11,8 +11,10 @@ bool showSettings;
 bool rebuildScreen;
 List select2del = [];
 List<int> idList = [];
+List<int> idLearnList = [];
 String languageCode;
 String language;
+List<bool> chosenSectionList;
 
 
 bool direction = true; // true -> ask translation, false -> aks word

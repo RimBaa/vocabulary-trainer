@@ -4,6 +4,7 @@ import 'package:flutter_tts/flutter_tts.dart';
 import 'package:vocabulary/global_vars.dart';
 import 'package:vocabulary/vocabulary/database.dart';
 
+// write answer to given word
 class EnterAnswerCl extends StatefulWidget {
   final Function callback;
   final int questionId;
@@ -69,7 +70,6 @@ class EnterAnswerState extends State<EnterAnswerCl> {
 
   Widget enterAnswer() {
     if (answered == false) {
-      print('MMMMMMMMM');
       _controller.clear();
       correctanswer = '';
       answerColor = Colors.grey[300];
@@ -108,7 +108,7 @@ class EnterAnswerState extends State<EnterAnswerCl> {
         Container(
             padding:
                 EdgeInsets.only(top: MediaQuery.of(context).size.height * 0.05),
-            width: MediaQuery.of(context).size.width * 0.7,
+            width: MediaQuery.of(context).size.width * 0.8,
             child: TextField(
               decoration: InputDecoration(
                   enabledBorder: OutlineInputBorder(
@@ -120,6 +120,8 @@ class EnterAnswerState extends State<EnterAnswerCl> {
                 if (value ==
                     vocableLearnList[widget.questionId][widget.answerMode]) {
                   answerColor = Colors.green;
+
+                  //update section
                   if (vocableLearnList[widget.questionId]['section'] < 5 &&
                       widget.correctCounter[widget.counter] == 2) {
                     widget.correctCounter[widget.counter] = 3;
@@ -136,17 +138,36 @@ class EnterAnswerState extends State<EnterAnswerCl> {
                                 ['translation'],
                             word: vocableLearnList[widget.questionId]['word']))
                         .whenComplete(() {
-                      setState(() {});
+                      // setState(() {});
                     });
                   } else {
                     widget.correctCounter[widget.counter] =
                         widget.correctCounter[widget.counter] + 1;
-                    setState(() {});
+                    //  setState(() {});
                   }
                 } else {
                   correctanswer =
                       vocableLearnList[widget.questionId][widget.answerMode];
                   answerColor = Colors.red;
+
+                  if (widget.correctCounter[widget.counter] < 2 &&
+                      vocableLearnList[widget.questionId]['section'] > 1) {
+                    updateVocableTable(VocableTable(
+                            id: vocableLearnList[widget.questionId]['id'],
+                            wordNote: vocableLearnList[widget.questionId]
+                                ['wordNote'],
+                            translationNote: vocableLearnList[widget.questionId]
+                                ['translationNote'],
+                            section: vocableLearnList[widget.questionId]
+                                    ['section'] -
+                                1,
+                            translation: vocableLearnList[widget.questionId]
+                                ['translation'],
+                            word: vocableLearnList[widget.questionId]['word']))
+                        .whenComplete(() {
+                      // setState(() {});
+                    });
+                  }
                 }
               },
             ))

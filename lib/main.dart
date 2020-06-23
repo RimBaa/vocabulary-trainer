@@ -5,7 +5,6 @@ import 'package:vocabulary/vocabulary/database.dart';
 import 'package:vocabulary/vocabulary/vocable.dart';
 import 'global_vars.dart';
 
-
 void main() {
   //SharedPreferences.setMockInitialValues({});
   runApp(new VocabularyApp());
@@ -25,6 +24,8 @@ class VocabularyApp extends StatefulWidget {
 class VocabularyState extends State<VocabularyApp> {
   @override
   void initState() {
+    chosenSectionList = [true, true, true, true, true];
+    sectionNum = [1, 2, 3, 4, 5];
     super.initState();
     getDB().whenComplete(() {
       setState(() {});
@@ -46,7 +47,7 @@ class VocabularyState extends State<VocabularyApp> {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
+    return MaterialApp(debugShowCheckedModeBanner: false,
       title: 'vocabulary trainer',
       theme: ThemeData(
         primarySwatch: Colors.amber,

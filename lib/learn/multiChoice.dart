@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_tts/flutter_tts.dart';
 import 'package:vocabulary/global_vars.dart';
 
-
 //multiple choice page with 4 answer options
 class MultChoiceCl extends StatefulWidget {
   final Function callback;
@@ -73,6 +72,8 @@ class MultChoiceState extends State<MultChoiceCl> {
   Widget multipleChoice() {
     String questionNote = '';
     String answerNote = '';
+    var wordId;
+
     print(widget.correctCounter);
     if (widget.questionMode == 'translation') {
       questionNote = 'translationNote';
@@ -97,21 +98,21 @@ class MultChoiceState extends State<MultChoiceCl> {
       }
 
       multChoiceList.shuffle();
-    } else {
-      answered = false;
+    } else if (timer == null || timer != null && !timer.isActive) {
       print('bottom');
       speakWord(vocableLearnList[widget.questionId]['translation']);
       timer = new Timer.periodic(
           Duration(seconds: 1),
           (Timer t) => setState(() {
+                answered = false;
                 print(mounted);
                 timer.cancel();
                 widget.callback();
               }));
     }
-
     int idPosition = multChoiceList.indexOf(widget.questionId);
-
+    wordId = vocableLearnList.where((element) => element['id'] == 74);
+    print(wordId);
     return Column(
       children: <Widget>[
         Container(
