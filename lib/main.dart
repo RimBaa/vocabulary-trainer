@@ -6,13 +6,8 @@ import 'package:vocabulary/vocabulary/vocable.dart';
 import 'global_vars.dart';
 
 void main() {
-  //SharedPreferences.setMockInitialValues({});
   runApp(new VocabularyApp());
 }
-
-// Future<Null> main() async {
-//   runApp(new VocabularyApp());
-// }
 
 class VocabularyApp extends StatefulWidget {
   @override

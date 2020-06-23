@@ -14,8 +14,6 @@ import 'package:ext_storage/ext_storage.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:vocabulary/vocabulary/database.dart';
 
-//import 'language.dart';
-
 // page with list of vocables
 class ListVocab extends StatefulWidget {
   @override

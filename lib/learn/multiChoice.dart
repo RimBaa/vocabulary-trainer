@@ -59,8 +59,6 @@ class MultChoiceState extends State<MultChoiceCl> {
             child: Center(
                 child: LinearProgressIndicator(
               value: widget.progressvalue,
-              //backgroundColor: Colors.amberAccent[100],
-              //valueColor: AlwaysStoppedAnimation(Colors.amber),
             ))),
         multipleChoice()
       ]),
@@ -116,7 +114,6 @@ class MultChoiceState extends State<MultChoiceCl> {
     return Column(
       children: <Widget>[
         Container(
-            //  padding: EdgeInsets.all(10),
             height: MediaQuery.of(context).size.height * 0.1,
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
