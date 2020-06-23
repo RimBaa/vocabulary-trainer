@@ -1,17 +1,20 @@
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:flutter/material.dart';
-import 'package:sqflite/sqlite_api.dart';
 
 SharedPreferences prefs;
-String currentlanguage = "";
 const fontSize = 18.0;
-List<String>languages;
-final String keylanguageList = "languagesList";
-final String keylanguage = "currentLanguage";
- ListView chooseLang;
- var database;
- int dbSize;
- List listTables;
-var databaseLearn;
+var database;
+int dbSize;
 List vocableList;
-List translationList;
+List vocableLearnList;
+List<int> sectionNum;
+bool showSettings;
+bool rebuildScreen;
+List select2del = [];
+List<int> idList = [];
+List<int> idLearnList = [];
+String languageCode;
+String language;
+List<bool> chosenSectionList;
+
+
+bool direction = true; // true -> ask translation, false -> aks word

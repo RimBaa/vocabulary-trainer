@@ -1,21 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:sqflite/sqflite.dart';
-import 'package:vocabulary/drawer.dart';
+import 'package:vocabulary/learn/learn.dart';
+import 'package:vocabulary/vocabulary/database.dart';
+import 'package:vocabulary/vocabulary/vocable.dart';
 import 'global_vars.dart';
-import 'language.dart';
-import 'vocable.dart';
-import 'package:path/path.dart';
 
 void main() {
-  //SharedPreferences.setMockInitialValues({});
   runApp(new VocabularyApp());
-
 }
-
-// Future<Null> main() async {
-//   runApp(new VocabularyApp());
-// }
 
 class VocabularyApp extends StatefulWidget {
   @override
@@ -27,27 +19,33 @@ class VocabularyApp extends StatefulWidget {
 class VocabularyState extends State<VocabularyApp> {
   @override
   void initState() {
-    _getLanguages().whenComplete(() {
-      setState(() {});
-      getDatabase();
-    });
+    chosenSectionList = [true, true, true, true, true];
+    sectionNum = [1, 2, 3, 4, 5];
     super.initState();
+    getDB().whenComplete(() {
+      setState(() {});
+    });
   }
 
-  _getLanguages() async {
+  getDB() async {
     prefs = await SharedPreferences.getInstance();
-    languages = prefs.getStringList(keylanguageList) ?? [];
-    currentlanguage = prefs.getString(keylanguage) ?? '0';
-    print(currentlanguage);
-    print(languages);
+    language = prefs.getString('language') ?? 'English';
+    languageCode = prefs.getString('languageCode') ?? 'en';
+    print(languageCode);
+    ListVocabState vocObj = new ListVocabState();
+    getDatabase().whenComplete(() {
+      vocObj.getVocableList().whenComplete(() {
+        setState(() {});
+      });
+    });
   }
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
+    return MaterialApp(debugShowCheckedModeBanner: false,
       title: 'vocabulary trainer',
       theme: ThemeData(
-        primarySwatch: Colors.blue,
+        primarySwatch: Colors.amber,
       ),
       home: MyHomePage(title: "vocabulary trainer"),
     );
@@ -65,106 +63,51 @@ class MyHomePage extends StatefulWidget {
 
 //home screen
 class _MyHomePageState extends State<MyHomePage> {
+  int indexScreen;
 
-
+  initState() {
+    super.initState();
+    indexScreen = 0;
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        // title: Text(widget.title),
-        actions: <Widget>[
-          Container(padding: EdgeInsets.symmetric(vertical: 15.0),child: Text(currentlanguage, textAlign: TextAlign.center, style:TextStyle(fontSize: fontSize))),
-          PopupMenuButton(
-            onSelected: (choice){
-            setState(() {
-              changeCurrentLanguage(choice);
-              
-            });},
-            itemBuilder: (BuildContext context){
-            return languages.map((String choice){
-              return PopupMenuItem<String>(
-                value: choice,
-                child: Text(choice)
-              );
-            }).toList();
-          })
-        ],
-      ),
-      body: _homeScreen(context),
-      drawer: createDrawer(context),
+      resizeToAvoidBottomPadding: false,
+      body: _setScreen(indexScreen, context),
+      //drawer: createDrawer(context),
+      bottomNavigationBar: bottomNaviBar(context),
     );
   }
 
-  Widget _homeScreen(context) {
-    //no language to learn available
-    if (currentlanguage == '0' || currentlanguage == null) {
-      return new Center(
-          child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: <Widget>[
-            RaisedButton(
-              onPressed: () async {
-                await addlanguage(context);
-                print("$currentlanguage");
-                if (currentlanguage != '0' && currentlanguage != null) {
-                  setState(() {
-                    languages.add(currentlanguage);
-                    setCurrentLanguage(currentlanguage);
-                    setLanguageList();
-                  });
-                }
-              },
-              child: const Text("add a new language",
-                  style: TextStyle(fontSize: 20, color: Colors.white)),
-              color: Colors.blue,
-              padding: EdgeInsets.fromLTRB(10, 20, 10, 20),
-            )
-          ]));
-    }
+  bottomNaviBar(context) {
+    return BottomNavigationBar(
+      selectedItemColor: Colors.amberAccent[700],
+      unselectedItemColor: Colors.amberAccent[300],
+      items: const [
+        BottomNavigationBarItem(
+            icon: Icon(Icons.home), title: Text('vocabulary')),
+        // BottomNavigationBarItem(
+        //     icon: Icon(Icons.table_chart), title: Text('sections')),
+        BottomNavigationBarItem(icon: Icon(Icons.school), title: Text('learn'))
+      ],
+      backgroundColor: Colors.amberAccent[100],
+      onTap: (value) {
+        setState(() {
+          indexScreen = value;
+        });
+      },
+      currentIndex: indexScreen,
+    );
+  }
 
-    // there already exist languages to learn
-    else {
-      return new Center(
-          child: Column(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: <Widget>[
-            RaisedButton(
-              onPressed: () async {
-                await addlanguage(context);
-                print("$currentlanguage");
-                if (currentlanguage != '0' && currentlanguage != null) {
-                  setState(() {
-                    if (!languages.contains(currentlanguage)) {
-                      languages.add(currentlanguage);
-                      setLanguageList();
-                    }
-                    setCurrentLanguage(currentlanguage);
-                  });
-                }
-              },
-              child: const Text("add a new  language",
-                  style: TextStyle(fontSize: 20, color: Colors.white)),
-              color: Colors.blue,
-              padding: EdgeInsets.symmetric(vertical: 30.0, horizontal: 40.0),
-            ),
-            RaisedButton(
-              onPressed: () async {
-                await addVocable(context);
-              },
-              child: const Text("add a vocable",
-                  style: TextStyle(fontSize: 20, color: Colors.white)),
-              color: Colors.blue,
-              padding: EdgeInsets.symmetric(vertical: 30.0, horizontal: 70.0),
-            ),
-            RaisedButton(
-              onPressed: () async {},
-              child: const Text("start learning",
-                  style: TextStyle(fontSize: 20, color: Colors.white)),
-              color: Colors.blue,
-              padding: EdgeInsets.symmetric(vertical: 30.0, horizontal: 70.0),
-            )
-          ]));
+//handle screen switch
+  _setScreen(int index, context) {
+    if (index == 0) {
+      return ListVocab();
+    } else {
+      rebuildScreen = true;
+      return Learn();
     }
   }
 }

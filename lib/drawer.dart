@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:vocabulary/global_vars.dart';
-import 'vocable.dart';
-import 'learn.dart';
-import 'language.dart';
+import 'package:vocabulary/vocabulary/vocable.dart';
+
 import 'section.dart';
 
 createDrawer(context) {
@@ -25,14 +24,14 @@ createDrawer(context) {
             decoration: BoxDecoration(color: Colors.blue),
           ),
         ),
-        ListTile(
-          contentPadding: EdgeInsets.fromLTRB(10.0, 10.0, 10.0, 10.0),
-          title: Text(settings[0], style: TextStyle(fontSize: fontSize)),
-          onTap: () {
-            Navigator.push(
-                context, MaterialPageRoute(builder: (context) => ListLang()));
-          },
-        ),
+        // ListTile(
+        //   contentPadding: EdgeInsets.fromLTRB(10.0, 10.0, 10.0, 10.0),
+        //   title: Text(settings[0], style: TextStyle(fontSize: fontSize)),
+        //   onTap: () {
+        //     Navigator.push(
+        //         context, MaterialPageRoute(builder: (context) => ListLang()));
+        //   },
+        // ),
         ListTile(
           contentPadding: EdgeInsets.fromLTRB(10.0, 10.0, 10.0, 10.0),
           title: Text(settings[1], style: TextStyle(fontSize: fontSize)),
@@ -49,14 +48,7 @@ createDrawer(context) {
                 context, MaterialPageRoute(builder: (context) => Sections()));
           },
         ),
-        ListTile(
-          contentPadding: EdgeInsets.fromLTRB(10.0, 10.0, 10.0, 10.0),
-          title: Text(settings[3], style: TextStyle(fontSize: fontSize)),
-          onTap: () {
-            Navigator.push(context,
-                MaterialPageRoute(builder: (context) => Learn()));
-          },
-        ),
+       
       ],
     ),
   );
