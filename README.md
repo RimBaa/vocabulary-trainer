@@ -22,4 +22,4 @@ This app helps to learn new vocabularies.
 ![](https://user-images.githubusercontent.com/46397845/85545657-7070c680-b61c-11ea-8277-a1a5aba1bea4.png){:height='50%' width='50%'}
 ![](https://user-images.githubusercontent.com/46397845/85545694-78c90180-b61c-11ea-93d1-22814e581240.png){:height='50%' width='50%'}
 ![](https://user-images.githubusercontent.com/46397845/85545699-79fa2e80-b61c-11ea-84ec-707541274d60.png){:height='50%' width='50%'}
-![](https://user-images.githubusercontent.com/46397845/85545705-7b2b5b80-b61c-11ea-9a72-b6287af66cf2.png){:height='50%' width='50%'}
+![height='50%' width='50%'](https://user-images.githubusercontent.com/46397845/85545705-7b2b5b80-b61c-11ea-9a72-b6287af66cf2.png){:height='50%' width='50%'}
