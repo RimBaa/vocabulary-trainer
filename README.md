@@ -1,6 +1,5 @@
 # Vocabulary Trainer App made with Flutter
 
-This app helps to learn new vocabularies.
 
 ## Features
 
