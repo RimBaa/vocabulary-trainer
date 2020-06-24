@@ -76,13 +76,15 @@ class EnterAnswerState extends State<EnterAnswerCl> {
     } else {
       print('bottom');
       answered = false;
-      speakWord(vocableLearnList[widget.questionId]['translation']);
-      timer = new Timer.periodic(
-          Duration(seconds: 2),
-          (Timer t) => setState(() {
-                timer.cancel();
-                widget.callback();
-              }));
+      speakWord(vocableLearnList[widget.questionId]['translation'])
+          .whenComplete(() {
+        timer = new Timer.periodic(
+            Duration(seconds: 1),
+            (Timer t) => setState(() {
+                  timer.cancel();
+                  widget.callback();
+                }));
+      });
     }
     return Column(
       children: <Widget>[
@@ -120,26 +122,9 @@ class EnterAnswerState extends State<EnterAnswerCl> {
                 if (value ==
                     vocableLearnList[widget.questionId][widget.answerMode]) {
                   answerColor = Colors.green;
-
-                  //update section
                   if (vocableLearnList[widget.questionId]['section'] < 5 &&
                       widget.correctCounter[widget.counter] == 2) {
                     widget.correctCounter[widget.counter] = 3;
-                    updateVocableTable(VocableTable(
-                            id: vocableLearnList[widget.questionId]['id'],
-                            wordNote: vocableLearnList[widget.questionId]
-                                ['wordNote'],
-                            translationNote: vocableLearnList[widget.questionId]
-                                ['translationNote'],
-                            section: vocableLearnList[widget.questionId]
-                                    ['section'] +
-                                1,
-                            translation: vocableLearnList[widget.questionId]
-                                ['translation'],
-                            word: vocableLearnList[widget.questionId]['word']))
-                        .whenComplete(() {
-                      // setState(() {});
-                    });
                   } else {
                     widget.correctCounter[widget.counter] =
                         widget.correctCounter[widget.counter] + 1;
@@ -150,24 +135,7 @@ class EnterAnswerState extends State<EnterAnswerCl> {
                       vocableLearnList[widget.questionId][widget.answerMode];
                   answerColor = Colors.red;
 
-                  if (widget.correctCounter[widget.counter] < 2 &&
-                      vocableLearnList[widget.questionId]['section'] > 1) {
-                    updateVocableTable(VocableTable(
-                            id: vocableLearnList[widget.questionId]['id'],
-                            wordNote: vocableLearnList[widget.questionId]
-                                ['wordNote'],
-                            translationNote: vocableLearnList[widget.questionId]
-                                ['translationNote'],
-                            section: vocableLearnList[widget.questionId]
-                                    ['section'] -
-                                1,
-                            translation: vocableLearnList[widget.questionId]
-                                ['translation'],
-                            word: vocableLearnList[widget.questionId]['word']))
-                        .whenComplete(() {
-                      // setState(() {});
-                    });
-                  }
+                 
                 }
               },
             ))

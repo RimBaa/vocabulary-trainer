@@ -364,7 +364,7 @@ class LearnState extends State<Learn> {
             'word', callbackSet, correctCounter, progressvalue);
       } else {
         List<int> overviewAns = countCorrectAns();
-        return new EndLearn(callback, overviewAns);
+        return new EndLearn(callback, overviewAns, correctCounter, questionList,counter);
       }
     }
   }

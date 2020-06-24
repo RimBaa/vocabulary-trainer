@@ -98,15 +98,17 @@ class MultChoiceState extends State<MultChoiceCl> {
       multChoiceList.shuffle();
     } else if (timer == null || timer != null && !timer.isActive) {
       print('bottom');
-      speakWord(vocableLearnList[widget.questionId]['translation']);
-      timer = new Timer.periodic(
-          Duration(seconds: 1),
-          (Timer t) => setState(() {
-                answered = false;
-                print(mounted);
-                timer.cancel();
-                widget.callback();
-              }));
+      speakWord(vocableLearnList[widget.questionId]['translation'])
+          .whenComplete(() {
+        timer = new Timer.periodic(
+            Duration(seconds: 1),
+            (Timer t) => setState(() {
+                  answered = false;
+                  print(mounted);
+                  timer.cancel();
+                  widget.callback();
+                }));
+      });
     }
     int idPosition = multChoiceList.indexOf(widget.questionId);
     wordId = vocableLearnList.where((element) => element['id'] == 74);
@@ -121,9 +123,11 @@ class MultChoiceState extends State<MultChoiceCl> {
                 Column(children: [
                   Text(vocableLearnList[widget.questionId][widget.questionMode],
                       style:
-                          TextStyle(fontSize: 25, fontWeight: FontWeight.bold)),
+                          TextStyle(fontSize: 25, fontWeight: FontWeight.bold),
+                      textAlign: TextAlign.center),
                   Text(vocableLearnList[widget.questionId][questionNote],
-                      style: (TextStyle(fontSize: 15, color: Colors.grey)))
+                      style: (TextStyle(fontSize: 15, color: Colors.grey)),
+                      textAlign: TextAlign.center)
                 ])
               ],
             )),
@@ -142,11 +146,13 @@ class MultChoiceState extends State<MultChoiceCl> {
                             Text(
                                 vocableLearnList[multChoiceList[0]]
                                     [widget.answerMode],
-                                style: TextStyle(fontSize: 20)),
+                                style: TextStyle(fontSize: 20),
+                                textAlign: TextAlign.center),
                             Text(
                                 vocableLearnList[multChoiceList[0]][answerNote],
                                 style: (TextStyle(
-                                    fontSize: 15, color: Colors.grey)))
+                                    fontSize: 15, color: Colors.grey)),
+                                textAlign: TextAlign.center)
                           ]),
                       onTap: () async {
                         if (widget.questionId == multChoiceList[0]) {
@@ -172,14 +178,15 @@ class MultChoiceState extends State<MultChoiceCl> {
                           crossAxisAlignment: CrossAxisAlignment.center,
                           children: [
                             Text(
-                              vocableLearnList[multChoiceList[1]]
-                                  [widget.answerMode],
-                              style: TextStyle(fontSize: 20),
-                            ),
+                                vocableLearnList[multChoiceList[1]]
+                                    [widget.answerMode],
+                                style: TextStyle(fontSize: 20),
+                                textAlign: TextAlign.center),
                             Text(
                                 vocableLearnList[multChoiceList[1]][answerNote],
                                 style: (TextStyle(
-                                    fontSize: 15, color: Colors.grey)))
+                                    fontSize: 15, color: Colors.grey)),
+                                textAlign: TextAlign.center)
                           ]),
                       onTap: () async {
                         if (widget.questionId == multChoiceList[1]) {
@@ -205,14 +212,15 @@ class MultChoiceState extends State<MultChoiceCl> {
                           crossAxisAlignment: CrossAxisAlignment.center,
                           children: [
                             Text(
-                              vocableLearnList[multChoiceList[2]]
-                                  [widget.answerMode],
-                              style: TextStyle(fontSize: 20),
-                            ),
+                                vocableLearnList[multChoiceList[2]]
+                                    [widget.answerMode],
+                                style: TextStyle(fontSize: 20),
+                                textAlign: TextAlign.center),
                             Text(
                                 vocableLearnList[multChoiceList[2]][answerNote],
                                 style: (TextStyle(
-                                    fontSize: 15, color: Colors.grey)))
+                                    fontSize: 15, color: Colors.grey)),
+                                textAlign: TextAlign.center)
                           ]),
                       onTap: () async {
                         if (widget.questionId == multChoiceList[2]) {
@@ -238,14 +246,15 @@ class MultChoiceState extends State<MultChoiceCl> {
                           crossAxisAlignment: CrossAxisAlignment.center,
                           children: [
                             Text(
-                              vocableLearnList[multChoiceList[3]]
-                                  [widget.answerMode],
-                              style: TextStyle(fontSize: 20),
-                            ),
+                                vocableLearnList[multChoiceList[3]]
+                                    [widget.answerMode],
+                                style: TextStyle(fontSize: 20),
+                                textAlign: TextAlign.center),
                             Text(
                                 vocableLearnList[multChoiceList[3]][answerNote],
                                 style: (TextStyle(
-                                    fontSize: 15, color: Colors.grey)))
+                                    fontSize: 15, color: Colors.grey)),
+                                textAlign: TextAlign.center)
                           ]),
                       onTap: () async {
                         if (widget.questionId == multChoiceList[3]) {
