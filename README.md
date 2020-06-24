@@ -1,16 +1,19 @@
-# vocabulary
+# Vocabulary Trainer App made with Flutter
 
-A new Flutter project.
+This app helps to learn new vocabularies.
 
-## Getting Started
+## Features
 
-This project is a starting point for a Flutter application.
+- export a created vocable list and save it in the Download folder as csv file
+- import a vocable list (only csv format is allowed)
+- three different ways to practise a vocable are implemented:
+  - multiple choice
+  - get given letters/ syllables into the right order
+  - write the translation
+- after each step the correct translation will be read out loud  
+- six languages are supported:
+  - English, French, German, Korean, Portuguese and Spanish
 
-A few resources to get you started if this is your first Flutter project:
+## Example Images
 
-- [Lab: Write your first Flutter app](https://flutter.dev/docs/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://flutter.dev/docs/cookbook)
-
-For help getting started with Flutter, view our
-[online documentation](https://flutter.dev/docs), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+(https://user-images.githubusercontent.com/46397845/85545649-6ea70300-b61c-11ea-8384-35412a3e19ff.png)
