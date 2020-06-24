@@ -100,13 +100,15 @@ class LettersOrderState extends State<LettersOrder> {
     if (answered == true && lettersList.length == 0) {
       answered = false;
       print('bottom');
-      speakWord(vocableLearnList[widget.questionId]['translation']);
-      timer = new Timer.periodic(
-          Duration(seconds: 1),
-          (Timer t) => setState(() {
-                timer.cancel();
-                widget.callback();
-              }));
+      speakWord(vocableLearnList[widget.questionId]['translation'])
+          .whenComplete(() {
+        timer = new Timer.periodic(
+            Duration(seconds: 1),
+            (Timer t) => setState(() {
+                  timer.cancel();
+                  widget.callback();
+                }));
+      });
     }
 
     return Column(
@@ -118,18 +120,21 @@ class LettersOrderState extends State<LettersOrder> {
                 children: <Widget>[
                   Text(vocableLearnList[widget.questionId][widget.questionMode],
                       style:
-                          TextStyle(fontSize: 25, fontWeight: FontWeight.bold)),
+                          TextStyle(fontSize: 25, fontWeight: FontWeight.bold),
+                      textAlign: TextAlign.center),
                   Text(
                       vocableLearnList[widget.questionId]
                           ['${widget.questionMode}' + 'Note'],
-                      style: (TextStyle(fontSize: 15, color: Colors.grey)))
+                      style: (TextStyle(fontSize: 15, color: Colors.grey)),
+                      textAlign: TextAlign.center)
                 ])),
         Container(
             child: Text(correctanswer,
                 style: TextStyle(
                     fontSize: 25,
                     fontWeight: FontWeight.bold,
-                    color: Colors.green))),
+                    color: Colors.green),
+                textAlign: TextAlign.center)),
         Container(
             padding: EdgeInsets.only(
                 top: MediaQuery.of(context).size.height * 0.005),
@@ -141,8 +146,8 @@ class LettersOrderState extends State<LettersOrder> {
               mainAxisAlignment: MainAxisAlignment.center,
               children: <Widget>[
                 Text(answerStr,
-                    style:
-                        TextStyle(fontSize: 25, fontWeight: FontWeight.bold)),
+                    style: TextStyle(fontSize: 25, fontWeight: FontWeight.bold),
+                    textAlign: TextAlign.center),
               ],
             )),
         Container(
@@ -154,7 +159,8 @@ class LettersOrderState extends State<LettersOrder> {
                 children: List<Widget>.generate(
                     lettersList.length,
                     (index) => ActionChip(
-                          label: Text(lettersList[index]),
+                          label: Text(lettersList[index],
+                              textAlign: TextAlign.center),
                           onPressed: () async {
                             answerStr = answerStr + (lettersList[index]);
 
