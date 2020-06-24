@@ -1,5 +1,8 @@
 # Vocabulary Trainer App made with Flutter
 
+## Prerequisite
+
+- Android 5.0 or higher
 
 ## Features
 
