@@ -103,7 +103,7 @@ class LettersOrderState extends State<LettersOrder> {
       speakWord(vocableLearnList[widget.questionId]['translation'])
           .whenComplete(() {
         timer = new Timer.periodic(
-            Duration(seconds: 1),
+            Duration(seconds: 2),
             (Timer t) => setState(() {
                   timer.cancel();
                   widget.callback();
@@ -113,77 +113,83 @@ class LettersOrderState extends State<LettersOrder> {
 
     return Column(
       children: <Widget>[
-        Container(
-            height: MediaQuery.of(context).size.height * 0.2,
-            child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: <Widget>[
-                  Text(vocableLearnList[widget.questionId][widget.questionMode],
-                      style:
-                          TextStyle(fontSize: 25, fontWeight: FontWeight.bold),
-                      textAlign: TextAlign.center),
-                  Text(
-                      vocableLearnList[widget.questionId]
-                          ['${widget.questionMode}' + 'Note'],
-                      style: (TextStyle(fontSize: 15, color: Colors.grey)),
-                      textAlign: TextAlign.center)
-                ])),
-        Container(
-            child: Text(correctanswer,
-                style: TextStyle(
-                    fontSize: 25,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.green),
-                textAlign: TextAlign.center)),
-        Container(
-            padding: EdgeInsets.only(
-                top: MediaQuery.of(context).size.height * 0.005),
-            width: MediaQuery.of(context).size.width * 0.8,
-            decoration: BoxDecoration(
-                border:
-                    Border(bottom: BorderSide(width: 3.0, color: answerColor))),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: <Widget>[
-                Text(answerStr,
-                    style: TextStyle(fontSize: 25, fontWeight: FontWeight.bold),
-                    textAlign: TextAlign.center),
-              ],
-            )),
-        Container(
-            padding:
-                EdgeInsets.only(top: MediaQuery.of(context).size.height * 0.2),
-            child: Wrap(
-                spacing: 6.0,
-                runSpacing: 6.0,
-                children: List<Widget>.generate(
-                    lettersList.length,
-                    (index) => ActionChip(
-                          label: Text(lettersList[index],
-                              textAlign: TextAlign.center),
-                          onPressed: () async {
-                            answerStr = answerStr + (lettersList[index]);
+        Center(
+            child: Container(
+                height: MediaQuery.of(context).size.height * 0.2,
+                child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: <Widget>[
+                      Text(
+                          vocableLearnList[widget.questionId]
+                              [widget.questionMode],
+                          style: TextStyle(
+                              fontSize: 25, fontWeight: FontWeight.bold)),
+                      Text(
+                          vocableLearnList[widget.questionId]
+                              ['${widget.questionMode}' + 'Note'],
+                          style: (TextStyle(fontSize: 15, color: Colors.grey)))
+                    ]))),
+        Center(
+            child: Container(
+                child: Text(correctanswer,
+                    style: TextStyle(
+                        fontSize: 25,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.green),
+                    textAlign: TextAlign.center))),
+        Center(
+            child: Container(
+                padding: EdgeInsets.only(
+                    top: MediaQuery.of(context).size.height * 0.005),
+                width: MediaQuery.of(context).size.width * 0.8,
+                decoration: BoxDecoration(
+                    border: Border(
+                        bottom: BorderSide(width: 3.0, color: answerColor))),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: <Widget>[
+                    Text(answerStr,
+                        style: TextStyle(
+                            fontSize: 25, fontWeight: FontWeight.bold)),
+                  ],
+                ))),
+        Center(
+            child: Container(
+                padding: EdgeInsets.only(
+                    top: MediaQuery.of(context).size.height * 0.2),
+                child: Wrap(
+                    spacing: 6.0,
+                    runSpacing: 6.0,
+                    children: List<Widget>.generate(
+                        lettersList.length,
+                        (index) => ActionChip(
+                              label: Text(lettersList[index],
+                                  textAlign: TextAlign.center),
+                              onPressed: () async {
+                                answerStr = answerStr + (lettersList[index]);
 
-                            lettersList.removeAt(index);
-                            print(answerStr);
-                            answered = true;
+                                lettersList.removeAt(index);
+                                print(answerStr);
+                                answered = true;
 
-                            if (lettersList.length == 0 && answered == true) {
-                              if (answerStr ==
-                                  vocableLearnList[widget.questionId]
-                                      [widget.answerMode]) {
-                                answerColor = Colors.green;
+                                if (lettersList.length == 0 &&
+                                    answered == true) {
+                                  if (answerStr ==
+                                      vocableLearnList[widget.questionId]
+                                          [widget.answerMode]) {
+                                    answerColor = Colors.green;
 
-                                widget.correctCounter[widget.counter] =
-                                    widget.correctCounter[widget.counter] + 1;
-                              } else {
-                                answerColor = Colors.red;
-                                correctanswer = answer;
-                              }
-                            }
-                            setState(() {});
-                          },
-                        ))))
+                                    widget.correctCounter[widget.counter] =
+                                        widget.correctCounter[widget.counter] +
+                                            1;
+                                  } else {
+                                    answerColor = Colors.red;
+                                    correctanswer = answer;
+                                  }
+                                }
+                                setState(() {});
+                              },
+                            )))))
       ],
     );
   }
@@ -195,6 +201,7 @@ class LettersOrderState extends State<LettersOrder> {
     await flutterTts.speak(word);
   }
 
+//not used
 // get hangul character list
   List<String> getLetters(String answer) {
     List<String> characterList = [];

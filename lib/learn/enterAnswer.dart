@@ -2,7 +2,6 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_tts/flutter_tts.dart';
 import 'package:vocabulary/global_vars.dart';
-import 'package:vocabulary/vocabulary/database.dart';
 
 // write answer to given word
 class EnterAnswerCl extends StatefulWidget {
@@ -79,7 +78,7 @@ class EnterAnswerState extends State<EnterAnswerCl> {
       speakWord(vocableLearnList[widget.questionId]['translation'])
           .whenComplete(() {
         timer = new Timer.periodic(
-            Duration(seconds: 1),
+            Duration(seconds: 2),
             (Timer t) => setState(() {
                   timer.cancel();
                   widget.callback();
@@ -88,57 +87,62 @@ class EnterAnswerState extends State<EnterAnswerCl> {
     }
     return Column(
       children: <Widget>[
-        Container(
-            height: MediaQuery.of(context).size.height * 0.2,
-            child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: <Widget>[
-                  Text(vocableLearnList[widget.questionId][widget.questionMode],
-                      style:
-                          TextStyle(fontSize: 25, fontWeight: FontWeight.bold)),
-                  Text(
-                      vocableLearnList[widget.questionId]
-                          ['${widget.questionMode}' + 'Note'],
-                      style: (TextStyle(fontSize: 15, color: Colors.grey)))
-                ])),
-        Container(
-            child: Text(correctanswer,
-                style: TextStyle(
-                    fontSize: 25,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.green))),
-        Container(
-            padding:
-                EdgeInsets.only(top: MediaQuery.of(context).size.height * 0.05),
-            width: MediaQuery.of(context).size.width * 0.8,
-            child: TextField(
-              decoration: InputDecoration(
-                  enabledBorder: OutlineInputBorder(
-                      borderSide: BorderSide(width: 3.0, color: answerColor)),
-                  labelText: 'Enter translation'),
-              controller: _controller,
-              onSubmitted: (String value) async {
-                answered = true;
-                if (value ==
-                    vocableLearnList[widget.questionId][widget.answerMode]) {
-                  answerColor = Colors.green;
-                  if (vocableLearnList[widget.questionId]['section'] < 5 &&
-                      widget.correctCounter[widget.counter] == 2) {
-                    widget.correctCounter[widget.counter] = 3;
-                  } else {
-                    widget.correctCounter[widget.counter] =
-                        widget.correctCounter[widget.counter] + 1;
-                    //  setState(() {});
-                  }
-                } else {
-                  correctanswer =
-                      vocableLearnList[widget.questionId][widget.answerMode];
-                  answerColor = Colors.red;
-
-                 
-                }
-              },
-            ))
+        Center(
+            child: Container(
+                height: MediaQuery.of(context).size.height * 0.2,
+                child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: <Widget>[
+                      Text(
+                          vocableLearnList[widget.questionId]
+                              [widget.questionMode],
+                          style: TextStyle(
+                              fontSize: 25, fontWeight: FontWeight.bold)),
+                      Text(
+                          vocableLearnList[widget.questionId]
+                              ['${widget.questionMode}' + 'Note'],
+                          style: (TextStyle(fontSize: 15, color: Colors.grey)))
+                    ]))),
+        Center(
+            child: Container(
+                child: Text(correctanswer,
+                    style: TextStyle(
+                        fontSize: 25,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.green)))),
+        Center(
+            child: Container(
+                padding: EdgeInsets.only(
+                    top: MediaQuery.of(context).size.height * 0.05),
+                width: MediaQuery.of(context).size.width * 0.8,
+                child: TextField(
+                  decoration: InputDecoration(
+                      enabledBorder: OutlineInputBorder(
+                          borderSide:
+                              BorderSide(width: 3.0, color: answerColor)),
+                      labelText: 'Enter translation'),
+                  controller: _controller,
+                  onSubmitted: (String value) async {
+                    answered = true;
+                    if (value ==
+                        vocableLearnList[widget.questionId]
+                            [widget.answerMode]) {
+                      answerColor = Colors.green;
+                      if (vocableLearnList[widget.questionId]['section'] < 5 &&
+                          widget.correctCounter[widget.counter] == 2) {
+                        widget.correctCounter[widget.counter] = 3;
+                      } else {
+                        widget.correctCounter[widget.counter] =
+                            widget.correctCounter[widget.counter] + 1;
+                        //  setState(() {});
+                      }
+                    } else {
+                      correctanswer = vocableLearnList[widget.questionId]
+                          [widget.answerMode];
+                      answerColor = Colors.red;
+                    }
+                  },
+                )))
       ],
     );
   }

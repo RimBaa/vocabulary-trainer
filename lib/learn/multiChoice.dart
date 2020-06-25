@@ -101,7 +101,7 @@ class MultChoiceState extends State<MultChoiceCl> {
       speakWord(vocableLearnList[widget.questionId]['translation'])
           .whenComplete(() {
         timer = new Timer.periodic(
-            Duration(seconds: 1),
+            Duration(seconds: 2),
             (Timer t) => setState(() {
                   answered = false;
                   print(mounted);

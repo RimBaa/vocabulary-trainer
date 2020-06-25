@@ -189,14 +189,17 @@ class ListVocabState extends State<ListVocab> {
       for (var map in vocableList) {
         var dataRow = List(keyIndexMap.length);
         map.forEach((key, value) {
+          if(key != 'id' && key != 'section'){
           var keyIndex = keyIndexMap[key];
           if (keyIndex == null) {
             keyIndex = _addKey(key);
+            print(keyIndex);
             dataRow = List.from(dataRow, growable: true)..add(value);
           } else {
             dataRow[keyIndex] = value;
-          }
+          }}
         });
+        print(dataRow);
         data.add(dataRow);
       }
 
@@ -263,7 +266,7 @@ class ListVocabState extends State<ListVocab> {
   insertAll(List<List<dynamic>> data, Database db) async {
     for (var row in data) {
       print(row);
-      await addVoc2Table(row[1], row[2], row[3], row[4]);
+      await addVoc2Table(row[0], row[1], row[2], row[3]);
     }
 
     getVocableList().whenComplete(() {
