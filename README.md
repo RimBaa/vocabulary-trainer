@@ -12,7 +12,7 @@
 
 - three different ways to practise a vocable are implemented:
   - multiple choice
-  - get given letters/ syllables into the right order
+  - place given letters/ syllables into the correct order
   - write the translation
 - the correct translations will be read out loud in each learning session
 - six languages are supported:
