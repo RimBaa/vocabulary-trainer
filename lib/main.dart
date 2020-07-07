@@ -42,7 +42,8 @@ class VocabularyState extends State<VocabularyApp> {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(debugShowCheckedModeBanner: false,
+    return MaterialApp(
+      debugShowCheckedModeBanner: false,
       title: 'vocabulary trainer',
       theme: ThemeData(
         primarySwatch: Colors.amber,

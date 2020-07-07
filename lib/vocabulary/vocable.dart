@@ -35,11 +35,27 @@ class ListVocabState extends State<ListVocab> {
   void initState() {
     super.initState();
     deleteBool = false;
+    chosenSectionVocList = [true, true, true, true, true];
+    sectionVocNum = [1, 2, 3, 4, 5];
+
+// refresh vocable list if it has been switched back to vocabulary page
+// -> showing all sections
+    if (database != null) {
+      getVocableList().whenComplete(() {
+        setState(() {});
+      });
+    }
+  }
+
+  void callback() {
+    setState(() {
+      Navigator.of(context).pop();
+    });
   }
 
   @override
   Widget build(BuildContext context) {
-    setState(() {});
+//    setState(() {});
     return Scaffold(
       resizeToAvoidBottomInset: false,
       appBar: AppBar(
@@ -55,6 +71,12 @@ class ListVocabState extends State<ListVocab> {
             ])),
         backgroundColor: Colors.amber,
         actions: <Widget>[
+          // IconButton(icon: Icon(Icons.search), onPressed: () {}),
+          IconButton(
+              icon: Icon(Icons.sort),
+              onPressed: () {
+                _sections(context);
+              }),
           selectPopupMenu(context, deleteBool),
         ],
       ),
@@ -130,6 +152,159 @@ class ListVocabState extends State<ListVocab> {
     }
   }
 
+// filter list of vocables
+  Future _sections(BuildContext context) {
+    return showDialog<String>(
+        context: context,
+        barrierDismissible: true,
+        builder: (BuildContext context) {
+          return StatefulBuilder(builder: (context, setState) {
+            return AlertDialog(
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.all(Radius.circular(20.0))),
+              actions: <Widget>[
+                RaisedButton(
+                    child: Text('Ok'),
+                    onPressed: () {
+                      callback();
+                    })
+              ],
+              title: Title(
+                  color: Colors.amber,
+                  child:
+                      Text('Settings', style: TextStyle(color: Colors.black))),
+              content: new Column(
+                mainAxisSize: MainAxisSize.min,
+                children: <Widget>[
+                  Column(
+                    children: <Widget>[
+                      Row(children: <Widget>[
+                        Text('section 1'),
+                        Container(
+                            padding: EdgeInsets.only(left: 50.0),
+                            child: Checkbox(
+                                value: chosenSectionVocList[0],
+                                onChanged: (value) {
+                                  chosenSectionVocList[0] =
+                                      !chosenSectionVocList[0];
+
+                                  if (chosenSectionVocList[0] == true) {
+                                    if (!sectionVocNum.contains(1)) {
+                                      sectionVocNum.add(1);
+                                    }
+                                  } else {
+                                    if (sectionVocNum.contains(1)) {
+                                      sectionVocNum.remove(1);
+                                    }
+                                  }
+                                  getVocableList().whenComplete(() {
+                                    setState(() {});
+                                  });
+                                }))
+                      ]),
+                      Row(children: <Widget>[
+                        Text('section 2'),
+                        Container(
+                            padding: EdgeInsets.only(left: 50.0),
+                            child: Checkbox(
+                                value: chosenSectionVocList[1],
+                                onChanged: (value) {
+                                  chosenSectionVocList[1] =
+                                      !chosenSectionVocList[1];
+                                  if (chosenSectionVocList[1] == true) {
+                                    if (!sectionVocNum.contains(2)) {
+                                      sectionVocNum.add(2);
+                                    }
+                                  } else {
+                                    if (sectionVocNum.contains(2)) {
+                                      sectionVocNum.remove(2);
+                                    }
+                                  }
+                                  getVocableList().whenComplete(() {
+                                    setState(() {});
+                                  });
+                                }))
+                      ]),
+                      Row(children: <Widget>[
+                        Text('section 3'),
+                        Container(
+                            padding: EdgeInsets.only(left: 50.0),
+                            child: Checkbox(
+                                value: chosenSectionVocList[2],
+                                onChanged: (value) {
+                                  chosenSectionVocList[2] =
+                                      !chosenSectionVocList[2];
+                                  if (chosenSectionVocList[2] == true) {
+                                    if (!sectionVocNum.contains(3)) {
+                                      sectionVocNum.add(3);
+                                    }
+                                  } else {
+                                    if (sectionVocNum.contains(3)) {
+                                      sectionVocNum.remove(3);
+                                    }
+                                  }
+
+                                  getVocableList().whenComplete(() {
+                                    setState(() {});
+                                  });
+                                }))
+                      ]),
+                      Row(children: <Widget>[
+                        Text('section 4'),
+                        Container(
+                            padding: EdgeInsets.only(left: 50.0),
+                            child: Checkbox(
+                                value: chosenSectionVocList[3],
+                                onChanged: (value) {
+                                  chosenSectionVocList[3] =
+                                      !chosenSectionVocList[3];
+                                  if (chosenSectionVocList[2] == true) {
+                                    if (!sectionVocNum.contains(4)) {
+                                      sectionVocNum.add(4);
+                                    }
+                                  } else {
+                                    if (sectionVocNum.contains(4)) {
+                                      sectionVocNum.remove(4);
+                                    }
+                                  }
+
+                                  getVocableList().whenComplete(() {
+                                    setState(() {});
+                                  });
+                                }))
+                      ]),
+                      Row(children: <Widget>[
+                        Text('section 5'),
+                        Container(
+                            padding: EdgeInsets.only(left: 50.0),
+                            child: Checkbox(
+                                value: chosenSectionVocList[4],
+                                onChanged: (value) {
+                                  chosenSectionVocList[4] =
+                                      !chosenSectionVocList[4];
+                                  if (chosenSectionVocList[4] == true) {
+                                    if (!sectionVocNum.contains(5)) {
+                                      sectionVocNum.add(5);
+                                    }
+                                  } else {
+                                    if (sectionVocNum.contains(5)) {
+                                      sectionVocNum.remove(5);
+                                    }
+                                  }
+                                  getVocableList().whenComplete(() {
+                                    setState(() {});
+                                  });
+                                }))
+                      ])
+                    ],
+                  )
+                ],
+              ),
+            );
+          });
+        });
+  }
+
 // delete multiple files, export or import a database
   selectPopupMenu(BuildContext context, bool delete) {
     if (delete == false) {
@@ -189,21 +364,23 @@ class ListVocabState extends State<ListVocab> {
       for (var map in vocableList) {
         var dataRow = List(keyIndexMap.length);
         map.forEach((key, value) {
-          if(key != 'id' && key != 'section'){
-          var keyIndex = keyIndexMap[key];
-          if (keyIndex == null) {
-            keyIndex = _addKey(key);
-            print(keyIndex);
-            dataRow = List.from(dataRow, growable: true)..add(value);
-          } else {
-            dataRow[keyIndex] = value;
-          }}
+          if (key != 'id' && key != 'section') {
+            var keyIndex = keyIndexMap[key];
+            if (keyIndex == null) {
+              keyIndex = _addKey(key);
+              print(keyIndex);
+              dataRow = List.from(dataRow, growable: true)..add(value);
+            } else {
+              dataRow[keyIndex] = value;
+            }
+          }
         });
         print(dataRow);
         data.add(dataRow);
       }
 
-      ListToCsvConverter converter = const ListToCsvConverter(fieldDelimiter: ';');
+      ListToCsvConverter converter =
+          const ListToCsvConverter(fieldDelimiter: ';');
       String csvList = converter.convert(data);
       writeFile(csvList);
     }
@@ -225,7 +402,7 @@ class ListVocabState extends State<ListVocab> {
 
     print(pathOfTheFileToWrite);
 
-//share csv file 
+//share csv file
     // await FlutterShare.shareFile(
     //   title: 'Export vocabulary',
     //   filePath: pathOfTheFileToWrite,
@@ -360,9 +537,8 @@ class ListVocabState extends State<ListVocab> {
                   overflow: TextOverflow.clip,
                   textAlign: TextAlign.center),
               Text(vocableList[index]['wordNote'],
-                  style: TextStyle(
-                      fontSize: 11,
-                      color: Colors.grey),textAlign: TextAlign.center)
+                  style: TextStyle(fontSize: 11, color: Colors.grey),
+                  textAlign: TextAlign.center)
             ])),
         Container(
             width: 10,
@@ -661,7 +837,9 @@ class ListVocabState extends State<ListVocab> {
   getVocableList() async {
     Database db = await database;
 
-    vocableList = await db.query(languageCode);
+    vocableList = await db.query(languageCode,
+        where: 'section IN (?,?,?,?,?)', whereArgs: sectionVocNum);
+
     print(await vocable());
   }
 
@@ -680,9 +858,9 @@ class ListVocabState extends State<ListVocab> {
 //get vocable list of chosen sections
   getvocableLearnList() async {
     Database db = await database;
-    print(sectionNum);
+    print(sectionVocNum);
     vocableLearnList = await db.query(languageCode,
-        where: 'section IN (?,?,?,?,?)', whereArgs: sectionNum);
+        where: 'section IN (?,?,?,?,?)', whereArgs: sectionVocNum);
 
     //print(vocableLearnList);
   }
@@ -695,7 +873,7 @@ class ListVocabState extends State<ListVocab> {
     for (int i = 0; i < vocableLearnList.length; i++) {
       idLearnList.add(vocableLearnList[i]['id']);
     }
-   
+
     return idLearnList;
   }
 }

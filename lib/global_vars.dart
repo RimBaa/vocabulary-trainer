@@ -7,14 +7,15 @@ int dbSize;
 List vocableList;
 List vocableLearnList;
 List<int> sectionNum;
+List<int> sectionVocNum;
 bool showSettings;
 bool rebuildScreen;
 List select2del = [];
 List<int> idList = [];
 List<int> idLearnList = [];
 String languageCode;
-String language;
+String language = '';
 List<bool> chosenSectionList;
-
+List<bool> chosenSectionVocList;
 
 bool direction = true; // true -> ask translation, false -> aks word

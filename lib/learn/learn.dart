@@ -88,7 +88,7 @@ class LearnState extends State<Learn> {
         progressvalue += addprogress;
         print(progressvalue);
       }
-   
+
       newSession = false;
     });
   }
@@ -330,7 +330,8 @@ class LearnState extends State<Learn> {
     }
   }
 
-// each vocable will be learned with the 3 learning options
+// each vocable will be shown 3 times
+//the learn options being used depend on the section level
   learn(BuildContext context) {
     print(counter);
     print(newSession);
@@ -343,18 +344,46 @@ class LearnState extends State<Learn> {
       progresscounter += 1;
       showSettings = false;
       print('progresscounter $progresscounter');
+
       if (progresscounter <= vocablenumber) {
         counter += 1;
         print('$questionList, $counter');
-        return new MultChoiceCl(questionList[counter], counter, answerMode,
-            questionMode, callbackSet, correctCounter, progressvalue);
+        if (vocableLearnList[questionList[counter]]['section'] < 3) {
+          return new MultChoiceCl(questionList[counter], counter, answerMode,
+              questionMode, callbackSet, correctCounter, progressvalue);
+        } else if (vocableLearnList[questionList[counter]]['section'] < 5) {
+          return new LettersOrder(questionList[counter], counter, 'translation',
+              'word', callbackSet, correctCounter, progressvalue);
+        } else {
+          return new EnterAnswerCl(
+              questionList[counter],
+              counter,
+              'translation',
+              'word',
+              callbackSet,
+              correctCounter,
+              progressvalue);
+        }
       } else if (progresscounter <= vocablenumber * 2) {
         if (counter == vocablenumber - 1) {
           counter = -1;
         }
         counter += 1;
-        return new LettersOrder(questionList[counter], counter, 'translation',
-            'word', callbackSet, correctCounter, progressvalue);
+
+        if (vocableLearnList[questionList[counter]]['section'] > 2 &&
+            vocableLearnList[questionList[counter]]['section'] < 5) {
+          return new EnterAnswerCl(
+              questionList[counter],
+              counter,
+              'translation',
+              'word',
+              callbackSet,
+              correctCounter,
+              progressvalue);
+        } else {
+          return new LettersOrder(questionList[counter], counter, 'translation',
+              'word', callbackSet, correctCounter, progressvalue);
+        }
       } else if (progresscounter <= vocablenumber * 3) {
         if (counter == vocablenumber - 1) {
           counter = -1;
@@ -364,7 +393,8 @@ class LearnState extends State<Learn> {
             'word', callbackSet, correctCounter, progressvalue);
       } else {
         List<int> overviewAns = countCorrectAns();
-        return new EndLearn(callback, overviewAns, correctCounter, questionList,counter);
+        return new EndLearn(
+            callback, overviewAns, correctCounter, questionList, counter);
       }
     }
   }
