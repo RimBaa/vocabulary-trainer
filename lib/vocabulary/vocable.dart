@@ -858,9 +858,9 @@ class ListVocabState extends State<ListVocab> {
 //get vocable list of chosen sections
   getvocableLearnList() async {
     Database db = await database;
-    print(sectionVocNum);
+    print(sectionNum);
     vocableLearnList = await db.query(languageCode,
-        where: 'section IN (?,?,?,?,?)', whereArgs: sectionVocNum);
+        where: 'section IN (?,?,?,?,?)', whereArgs: sectionNum);
 
     //print(vocableLearnList);
   }
