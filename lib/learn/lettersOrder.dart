@@ -99,16 +99,29 @@ class LettersOrderState extends State<LettersOrder> {
 
     if (answered == true && lettersList.length == 0) {
       answered = false;
-      print('bottom');
-      speakWord(vocableLearnList[widget.questionId]['translation'])
-          .whenComplete(() {
+
+      if (readTrans) {
+        speakWord(vocableLearnList[widget.questionId]['translation'])
+            .whenComplete(() {
+          timer = new Timer.periodic(
+              Duration(seconds: 2),
+              (Timer t) => setState(() {
+                    answered = false;
+                    print(mounted);
+                    timer.cancel();
+                    widget.callback();
+                  }));
+        });
+      } else {
         timer = new Timer.periodic(
             Duration(seconds: 2),
             (Timer t) => setState(() {
+                  answered = false;
+                  print(mounted);
                   timer.cancel();
                   widget.callback();
                 }));
-      });
+      }
     }
 
     return Column(

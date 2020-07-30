@@ -58,26 +58,33 @@ class LearnState extends State<Learn> {
   }
 
   void callbackSettings() {
-    setState(() {
-      progressvalue = 0.0;
-      newSession = true;
-      progresscounter = 0;
-      showSettings = true;
-      correctCounter = [];
-      questionList = [];
-      Navigator.pop(context);
+    vocListObj.getvocableLearnList().whenComplete(() {
+      setState(() {
+        progressvalue = 0.0;
+        newSession = true;
+        progresscounter = 0;
+        showSettings = true;
+        correctCounter = [];
+        questionList = [];
+        Navigator.pop(context);
+      });
     });
   }
 
   //setstate from other class
-  void callback() {
+  void callback(bool newsession) {
     setState(() {
       progressvalue = 0.0;
-      newSession = true;
-      showSettings = true;
+      newSession = newsession;
+      showSettings = newsession;
       progresscounter = 0;
       correctCounter = [];
-      questionList = [];
+      if (newsession) {
+        questionList = [];
+      } else {
+        counter = -1;
+        correctCounter = List.filled(vocablenumber, 0);
+      }
     });
   }
 
@@ -97,7 +104,7 @@ class LearnState extends State<Learn> {
   Widget build(BuildContext context) {
     if (rebuildScreen && !newSession) {
       rebuildScreen = false;
-      callback();
+      callback(true);
     }
     return Scaffold(
       resizeToAvoidBottomPadding: false,
@@ -144,136 +151,157 @@ class LearnState extends State<Learn> {
               ],
               title: Title(
                   color: Colors.amber,
-                  child:
-                      Text('Settings', style: TextStyle(color: Colors.black))),
+                  child: Text(
+                    'Settings',
+                    style: TextStyle(color: Colors.black),
+                    textAlign: TextAlign.center,
+                  )),
               content: new Column(
                 mainAxisSize: MainAxisSize.min,
                 children: <Widget>[
                   Column(
-                    children: <Widget>[
-                      Row(children: <Widget>[
-                        Text('section 1'),
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: <Widget>[
                         Container(
-                            padding: EdgeInsets.only(left: 50.0),
-                            child: Checkbox(
-                                value: chosenSectionList[0],
-                                onChanged: (value) {
-                                  chosenSectionList[0] = !chosenSectionList[0];
+                            padding: EdgeInsets.only(bottom: 10.0),
+                            child: Text(
+                              "Sections",
+                              style: TextStyle(
+                                  fontSize: 18, fontWeight: FontWeight.bold),
+                              textAlign: TextAlign.left,
+                            )),
+                        Row(children: <Widget>[
+                          Text('section 1'),
+                          Container(
+                              margin: EdgeInsets.only(left: 95.0),
+                              // padding: EdgeInsets.only(left: 50.0),
+                              child: Checkbox(
+                                  value: chosenSectionList[0],
+                                  onChanged: (value) {
+                                    chosenSectionList[0] =
+                                        !chosenSectionList[0];
 
-                                  if (chosenSectionList[0] == true) {
-                                    if (!sectionNum.contains(1)) {
-                                      sectionNum.add(1);
+                                    if (chosenSectionList[0] == true) {
+                                      if (!sectionNum.contains(1)) {
+                                        sectionNum.add(1);
+                                      }
+                                    } else {
+                                      if (sectionNum.contains(1)) {
+                                        sectionNum.remove(1);
+                                      }
                                     }
-                                  } else {
-                                    if (sectionNum.contains(1)) {
-                                      sectionNum.remove(1);
-                                    }
-                                  }
-                                  vocListObj
-                                      .getvocableLearnList()
-                                      .whenComplete(() {
                                     setState(() {});
-                                  });
-                                }))
-                      ]),
-                      Row(children: <Widget>[
-                        Text('section 2'),
+                                  }))
+                        ]),
+                        Row(children: <Widget>[
+                          Text('section 2'),
+                          Container(
+                              padding: EdgeInsets.only(left: 95.0),
+                              child: Checkbox(
+                                  value: chosenSectionList[1],
+                                  onChanged: (value) {
+                                    chosenSectionList[1] =
+                                        !chosenSectionList[1];
+                                    if (chosenSectionList[1] == true) {
+                                      if (!sectionNum.contains(2)) {
+                                        sectionNum.add(2);
+                                      }
+                                    } else {
+                                      if (sectionNum.contains(2)) {
+                                        sectionNum.remove(2);
+                                      }
+                                    }
+                                    setState(() {});
+                                  }))
+                        ]),
+                        Row(children: <Widget>[
+                          Text('section 3'),
+                          Container(
+                              padding: EdgeInsets.only(left: 95.0),
+                              child: Checkbox(
+                                  value: chosenSectionList[2],
+                                  onChanged: (value) {
+                                    chosenSectionList[2] =
+                                        !chosenSectionList[2];
+                                    if (chosenSectionList[2] == true) {
+                                      if (!sectionNum.contains(3)) {
+                                        sectionNum.add(3);
+                                      }
+                                    } else {
+                                      if (sectionNum.contains(3)) {
+                                        sectionNum.remove(3);
+                                      }
+                                    }
+                                    setState(() {});
+                                  }))
+                        ]),
+                        Row(children: <Widget>[
+                          Text('section 4'),
+                          Container(
+                              padding: EdgeInsets.only(left: 95.0),
+                              child: Checkbox(
+                                  value: chosenSectionList[3],
+                                  onChanged: (value) {
+                                    chosenSectionList[3] =
+                                        !chosenSectionList[3];
+                                    if (chosenSectionList[3] == true) {
+                                      if (!sectionNum.contains(4)) {
+                                        sectionNum.add(4);
+                                      }
+                                    } else {
+                                      if (sectionNum.contains(4)) {
+                                        sectionNum.remove(4);
+                                      }
+                                    }
+                                    setState(() {});
+                                  }))
+                        ]),
+                        Row(children: <Widget>[
+                          Text('section 5'),
+                          Container(
+                              padding: EdgeInsets.only(left: 95.0),
+                              child: Checkbox(
+                                  value: chosenSectionList[4],
+                                  onChanged: (value) {
+                                    chosenSectionList[4] =
+                                        !chosenSectionList[4];
+                                    if (chosenSectionList[4] == true) {
+                                      if (!sectionNum.contains(5)) {
+                                        sectionNum.add(5);
+                                      }
+                                    } else {
+                                      if (sectionNum.contains(5)) {
+                                        sectionNum.remove(5);
+                                      }
+                                    }
+                                    setState(() {});
+                                  }))
+                        ]),
                         Container(
-                            padding: EdgeInsets.only(left: 50.0),
-                            child: Checkbox(
-                                value: chosenSectionList[1],
-                                onChanged: (value) {
-                                  chosenSectionList[1] = !chosenSectionList[1];
-                                  if (chosenSectionList[1] == true) {
-                                    if (!sectionNum.contains(2)) {
-                                      sectionNum.add(2);
-                                    }
-                                  } else {
-                                    if (sectionNum.contains(2)) {
-                                      sectionNum.remove(2);
-                                    }
-                                  }
-                                  vocListObj
-                                      .getvocableLearnList()
-                                      .whenComplete(() {
-                                    setState(() {});
-                                  });
-                                }))
-                      ]),
-                      Row(children: <Widget>[
-                        Text('section 3'),
-                        Container(
-                            padding: EdgeInsets.only(left: 50.0),
-                            child: Checkbox(
-                                value: chosenSectionList[2],
-                                onChanged: (value) {
-                                  chosenSectionList[2] = !chosenSectionList[2];
-                                  if (chosenSectionList[2] == true) {
-                                    if (!sectionNum.contains(3)) {
-                                      sectionNum.add(3);
-                                    }
-                                  } else {
-                                    if (sectionNum.contains(3)) {
-                                      sectionNum.remove(3);
-                                    }
-                                  }
-                                  vocListObj
-                                      .getvocableLearnList()
-                                      .whenComplete(() {
-                                    setState(() {});
-                                  });
-                                }))
-                      ]),
-                      Row(children: <Widget>[
-                        Text('section 4'),
-                        Container(
-                            padding: EdgeInsets.only(left: 50.0),
-                            child: Checkbox(
-                                value: chosenSectionList[3],
-                                onChanged: (value) {
-                                  chosenSectionList[3] = !chosenSectionList[3];
-                                  if (chosenSectionList[2] == true) {
-                                    if (!sectionNum.contains(4)) {
-                                      sectionNum.add(4);
-                                    }
-                                  } else {
-                                    if (sectionNum.contains(4)) {
-                                      sectionNum.remove(4);
-                                    }
-                                  }
-                                  vocListObj
-                                      .getvocableLearnList()
-                                      .whenComplete(() {
-                                    setState(() {});
-                                  });
-                                }))
-                      ]),
-                      Row(children: <Widget>[
-                        Text('section 5'),
-                        Container(
-                            padding: EdgeInsets.only(left: 50.0),
-                            child: Checkbox(
-                                value: chosenSectionList[4],
-                                onChanged: (value) {
-                                  chosenSectionList[4] = !chosenSectionList[4];
-                                  if (chosenSectionList[4] == true) {
-                                    if (!sectionNum.contains(5)) {
-                                      sectionNum.add(5);
-                                    }
-                                  } else {
-                                    if (sectionNum.contains(5)) {
-                                      sectionNum.remove(5);
-                                    }
-                                  }
-                                  vocListObj
-                                      .getvocableLearnList()
-                                      .whenComplete(() {
-                                    setState(() {});
-                                  });
-                                }))
+                            padding: EdgeInsets.only(bottom: 10.0, top: 10.0),
+                            child: Text(
+                              "Sound",
+                              style: TextStyle(
+                                  fontSize: 18, fontWeight: FontWeight.bold),
+                              textAlign: TextAlign.left,
+                            )),
+                        Row(
+                          children: <Widget>[
+                            Text('read translation'),
+                            Container(
+                                margin: EdgeInsets.only(left: 50.0),
+                                //  padding: EdgeInsets.only(right: 50.0),
+                                child: Checkbox(
+                                  value: readTrans,
+                                  onChanged: (value) {
+                                    setState(() {
+                                      readTrans = !readTrans;
+                                    });
+                                  },
+                                ))
+                          ],
+                        )
                       ])
-                    ],
-                  )
                 ],
               ),
             );
@@ -349,8 +377,8 @@ class LearnState extends State<Learn> {
         counter += 1;
         print('$questionList, $counter');
         if (vocableLearnList[questionList[counter]]['section'] < 3) {
-          return new MultChoiceCl(questionList[counter], counter, answerMode,
-              questionMode, callbackSet, correctCounter, progressvalue);
+          return new MultChoiceCl(questionList[counter], counter, 'translation',
+              'word', callbackSet, correctCounter, progressvalue);
         } else if (vocableLearnList[questionList[counter]]['section'] < 5) {
           return new LettersOrder(questionList[counter], counter, 'translation',
               'word', callbackSet, correctCounter, progressvalue);
@@ -370,16 +398,9 @@ class LearnState extends State<Learn> {
         }
         counter += 1;
 
-        if (vocableLearnList[questionList[counter]]['section'] > 2 &&
-            vocableLearnList[questionList[counter]]['section'] < 5) {
-          return new EnterAnswerCl(
-              questionList[counter],
-              counter,
-              'translation',
-              'word',
-              callbackSet,
-              correctCounter,
-              progressvalue);
+        if (vocableLearnList[questionList[counter]]['section'] < 5) {
+          return new MultChoiceCl(questionList[counter], counter, 'word',
+              'translation', callbackSet, correctCounter, progressvalue);
         } else {
           return new LettersOrder(questionList[counter], counter, 'translation',
               'word', callbackSet, correctCounter, progressvalue);
@@ -389,8 +410,22 @@ class LearnState extends State<Learn> {
           counter = -1;
         }
         counter += 1;
-        return new EnterAnswerCl(questionList[counter], counter, 'translation',
-            'word', callbackSet, correctCounter, progressvalue);
+        if (vocableLearnList[questionList[counter]]['section'] < 3) {
+          return new LettersOrder(questionList[counter], counter, 'translation',
+              'word', callbackSet, correctCounter, progressvalue);
+        } else if (vocableLearnList[questionList[counter]]['section'] < 5) {
+          return new EnterAnswerCl(
+              questionList[counter],
+              counter,
+              'translation',
+              'word',
+              callbackSet,
+              correctCounter,
+              progressvalue);
+        } else {
+          return new MultChoiceCl(questionList[counter], counter, 'word',
+              'translation', callbackSet, correctCounter, progressvalue);
+        }
       } else {
         List<int> overviewAns = countCorrectAns();
         return new EndLearn(

@@ -73,17 +73,30 @@ class EnterAnswerState extends State<EnterAnswerCl> {
       correctanswer = '';
       answerColor = Colors.grey[300];
     } else {
-      print('bottom');
       answered = false;
-      speakWord(vocableLearnList[widget.questionId]['translation'])
-          .whenComplete(() {
+
+      if (readTrans) {
+        speakWord(vocableLearnList[widget.questionId]['translation'])
+            .whenComplete(() {
+          timer = new Timer.periodic(
+              Duration(seconds: 2),
+              (Timer t) => setState(() {
+                    answered = false;
+                    print(mounted);
+                    timer.cancel();
+                    widget.callback();
+                  }));
+        });
+      } else {
         timer = new Timer.periodic(
             Duration(seconds: 2),
             (Timer t) => setState(() {
+                  answered = false;
+                  print(mounted);
                   timer.cancel();
                   widget.callback();
                 }));
-      });
+      }
     }
     return Column(
       children: <Widget>[

@@ -48,8 +48,10 @@ class ListVocabState extends State<ListVocab> {
   }
 
   void callback() {
-    setState(() {
-      Navigator.of(context).pop();
+    getVocableList().whenComplete(() {
+      setState(() {
+        Navigator.of(context).pop();
+      });
     });
   }
 
@@ -172,7 +174,7 @@ class ListVocabState extends State<ListVocab> {
               title: Title(
                   color: Colors.amber,
                   child:
-                      Text('Settings', style: TextStyle(color: Colors.black))),
+                      Text('Sections', style: TextStyle(color: Colors.black))),
               content: new Column(
                 mainAxisSize: MainAxisSize.min,
                 children: <Widget>[
@@ -197,9 +199,7 @@ class ListVocabState extends State<ListVocab> {
                                       sectionVocNum.remove(1);
                                     }
                                   }
-                                  getVocableList().whenComplete(() {
-                                    setState(() {});
-                                  });
+                                  setState(() {});
                                 }))
                       ]),
                       Row(children: <Widget>[
@@ -220,9 +220,7 @@ class ListVocabState extends State<ListVocab> {
                                       sectionVocNum.remove(2);
                                     }
                                   }
-                                  getVocableList().whenComplete(() {
-                                    setState(() {});
-                                  });
+                                  setState(() {});
                                 }))
                       ]),
                       Row(children: <Widget>[
@@ -243,10 +241,7 @@ class ListVocabState extends State<ListVocab> {
                                       sectionVocNum.remove(3);
                                     }
                                   }
-
-                                  getVocableList().whenComplete(() {
-                                    setState(() {});
-                                  });
+                                  setState(() {});
                                 }))
                       ]),
                       Row(children: <Widget>[
@@ -258,7 +253,7 @@ class ListVocabState extends State<ListVocab> {
                                 onChanged: (value) {
                                   chosenSectionVocList[3] =
                                       !chosenSectionVocList[3];
-                                  if (chosenSectionVocList[2] == true) {
+                                  if (chosenSectionVocList[3] == true) {
                                     if (!sectionVocNum.contains(4)) {
                                       sectionVocNum.add(4);
                                     }
@@ -267,10 +262,7 @@ class ListVocabState extends State<ListVocab> {
                                       sectionVocNum.remove(4);
                                     }
                                   }
-
-                                  getVocableList().whenComplete(() {
-                                    setState(() {});
-                                  });
+                                  setState(() {});
                                 }))
                       ]),
                       Row(children: <Widget>[
@@ -291,9 +283,7 @@ class ListVocabState extends State<ListVocab> {
                                       sectionVocNum.remove(5);
                                     }
                                   }
-                                  getVocableList().whenComplete(() {
-                                    setState(() {});
-                                  });
+                                  setState(() {});
                                 }))
                       ])
                     ],
@@ -364,7 +354,7 @@ class ListVocabState extends State<ListVocab> {
       for (var map in vocableList) {
         var dataRow = List(keyIndexMap.length);
         map.forEach((key, value) {
-          if (key != 'id' && key != 'section') {
+          if (key != 'id') {
             var keyIndex = keyIndexMap[key];
             if (keyIndex == null) {
               keyIndex = _addKey(key);
@@ -443,7 +433,7 @@ class ListVocabState extends State<ListVocab> {
   insertAll(List<List<dynamic>> data, Database db) async {
     for (var row in data) {
       print(row);
-      await addVoc2Table(row[0], row[1], row[2], row[3]);
+      await addVoc2NewTable(row[0], row[1], row[2], row[3], row[4]);
     }
 
     getVocableList().whenComplete(() {
@@ -829,6 +819,41 @@ class ListVocabState extends State<ListVocab> {
         translation: transl,
         translationNote: translNote,
         section: 1);
+
+    await insertVocable(voc);
+  }
+
+// add vocable of imported database
+  addVoc2NewTable(vocab, vocabNote, transl, translNote, section) async {
+    int index = 0;
+    int largestId;
+    bool indexChosen = false;
+    await getVocableListId();
+
+    //finding id that isn't already used
+    if (idList.length > 0) {
+      largestId = idList[idList.length - 1];
+
+      for (int i = 0; i < largestId; i++) {
+        if (!idList.contains(i)) {
+          index = i;
+          indexChosen = true;
+          break;
+        }
+      }
+      if (indexChosen == false) {
+        index = largestId + 1;
+      }
+      print(largestId);
+    }
+
+    var voc = VocableTable(
+        id: index,
+        word: vocab,
+        wordNote: vocabNote,
+        translation: transl,
+        translationNote: translNote,
+        section: int.parse(section));
 
     await insertVocable(voc);
   }

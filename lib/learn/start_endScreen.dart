@@ -24,6 +24,8 @@ class StartLearningState extends State<StartLearning> {
 
   @override
   Widget build(BuildContext context) {
+    //startScreen
+    // option to select specific sections to practice
     return Scaffold(
         resizeToAvoidBottomInset: false,
         body: Container(
@@ -68,6 +70,8 @@ class EndLearnState extends State<EndLearn> {
     print(widget.questionList);
     print(widget.counter);
 
+// endScreen
+// shows how many answers were correct and how many were wrong
     return Scaffold(
         resizeToAvoidBottomInset: false,
         body: Container(
@@ -87,21 +91,31 @@ class EndLearnState extends State<EndLearn> {
                   child: Text('wrongs answers: $wrongAns',
                       style: TextStyle(
                           fontSize: 15, fontWeight: FontWeight.bold))),
+              //repeat with same vocables
               RaisedButton(
                   padding: EdgeInsets.all(10),
                   color: Colors.amber[400],
-                  child: Text('Done',
-                      style: TextStyle(fontSize: 20, color: Colors.white)),
+                  child: Icon(
+                    Icons.replay,
+                  ),
                   onPressed: () {
-                    updateSections();
+                    updateSections(true);
+                  }),
+              //back to start
+              RaisedButton(
+                  padding: EdgeInsets.all(10),
+                  color: Colors.amber[400],
+                  child: Text('Done', style: TextStyle(fontSize: 20)),
+                  onPressed: () {
+                    updateSections(false);
                   })
             ])));
   }
 
-    // //update sections 
-    // if a question has been answered correctly 3 times, it will be added to the next higher section
-    // if a question has been aswered correctly only once, it will be put to a lower section
-  updateSections() async {
+  // //update sections
+  // if a question has been answered correctly 3 times, it will be added to the next higher section
+  // if a question has been aswered correctly only once, it will be put to a lower section
+  updateSections(bool repeat) async {
     for (int count = 0; count < widget.questionList.length; count++) {
       if (vocableLearnList[widget.questionList[count]]['section'] < 5 &&
           widget.correctCounter[count] == 3) {
@@ -131,6 +145,11 @@ class EndLearnState extends State<EndLearn> {
       }
     }
     await vocListObj.getvocableLearnList();
-    widget.callback();
+
+    if (repeat) {
+      widget.callback(false);
+    } else {
+      widget.callback(true);
+    }
   }
 }

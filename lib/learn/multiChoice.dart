@@ -70,7 +70,6 @@ class MultChoiceState extends State<MultChoiceCl> {
   Widget multipleChoice() {
     String questionNote = '';
     String answerNote = '';
-    var wordId;
 
     print(widget.correctCounter);
     if (widget.questionMode == 'translation') {
@@ -97,9 +96,19 @@ class MultChoiceState extends State<MultChoiceCl> {
 
       multChoiceList.shuffle();
     } else if (timer == null || timer != null && !timer.isActive) {
-      print('bottom');
-      speakWord(vocableLearnList[widget.questionId]['translation'])
-          .whenComplete(() {
+      if (readTrans) {
+        speakWord(vocableLearnList[widget.questionId]['translation'])
+            .whenComplete(() {
+          timer = new Timer.periodic(
+              Duration(seconds: 2),
+              (Timer t) => setState(() {
+                    answered = false;
+                    print(mounted);
+                    timer.cancel();
+                    widget.callback();
+                  }));
+        });
+      } else {
         timer = new Timer.periodic(
             Duration(seconds: 2),
             (Timer t) => setState(() {
@@ -108,11 +117,10 @@ class MultChoiceState extends State<MultChoiceCl> {
                   timer.cancel();
                   widget.callback();
                 }));
-      });
+      }
     }
     int idPosition = multChoiceList.indexOf(widget.questionId);
-    wordId = vocableLearnList.where((element) => element['id'] == 74);
-    print(wordId);
+
     return Column(
       children: <Widget>[
         Container(

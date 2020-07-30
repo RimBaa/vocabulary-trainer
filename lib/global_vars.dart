@@ -17,5 +17,6 @@ String languageCode;
 String language = '';
 List<bool> chosenSectionList;
 List<bool> chosenSectionVocList;
+bool readTrans = true;
 
 bool direction = true; // true -> ask translation, false -> aks word
