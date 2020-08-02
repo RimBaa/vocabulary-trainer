@@ -22,7 +22,10 @@ class ListVocab extends StatefulWidget {
 
 class ListVocabState extends State<ListVocab> {
   bool deleteBool = false;
-
+  bool showSearchBar;
+  List<Map> filtered = [];
+  TextEditingController editingController = TextEditingController();
+  String searchString = '';
   List<List<String>> languagesList = [
     ['English', 'en'],
     ['French', 'fr'],
@@ -34,6 +37,7 @@ class ListVocabState extends State<ListVocab> {
 
   void initState() {
     super.initState();
+    showSearchBar = false;
     deleteBool = false;
     chosenSectionVocList = [true, true, true, true, true];
     sectionVocNum = [1, 2, 3, 4, 5];
@@ -73,7 +77,15 @@ class ListVocabState extends State<ListVocab> {
             ])),
         backgroundColor: Colors.amber,
         actions: <Widget>[
-          // IconButton(icon: Icon(Icons.search), onPressed: () {}),
+          IconButton(
+              icon: showSearchBar ? Icon(Icons.cancel) : Icon(Icons.search),
+              onPressed: () {
+                showSearchBar = !showSearchBar;
+                setState(() {
+                  editingController.clear();
+                  filtered = [];
+                });
+              }),
           IconButton(
               icon: Icon(Icons.sort),
               onPressed: () {
@@ -299,7 +311,6 @@ class ListVocabState extends State<ListVocab> {
   selectPopupMenu(BuildContext context, bool delete) {
     if (delete == false) {
       return PopupMenuButton(onSelected: (value) async {
-        print(value);
         // if (value == 'add') {
         //   await addVocable(context);
         //   await getVocableList();
@@ -441,61 +452,200 @@ class ListVocabState extends State<ListVocab> {
     });
   }
 
+  // searchbar
+  Widget _searchBar(BuildContext context) {
+    if (showSearchBar) {
+      return Container(
+          padding: EdgeInsets.only(top: 5.0),
+          child: TextField(
+              autofocus: true,
+              onChanged: (value) {
+                if (value.isNotEmpty) {
+                  searchString = value;
+                  _searchInput(value);
+                }
+              },
+              controller: editingController,
+              decoration: InputDecoration(
+                  hintText: "Search",
+                  prefixIcon: Icon(Icons.search),
+                  border: OutlineInputBorder(
+                      borderRadius: BorderRadius.all(Radius.circular(25.0))))));
+    } else
+      return Row();
+  }
+
+  _searchInput(String input) {
+    filtered = vocableList
+        .where((element) =>
+            element['word'].toLowerCase().contains(input.toLowerCase()) ||
+            element['translation'].toLowerCase().contains(input.toLowerCase()))
+        .toList();
+
+    setState(() {});
+  }
+
+//show search results in a list
+
+  _showresults(BuildContext context) {
+    SlidableController _slideControl;
+
+    return ListView.builder(
+        scrollDirection: Axis.vertical,
+        itemCount: filtered.length,
+        shrinkWrap: true,
+        itemBuilder: (context, index) {
+          return new Slidable(
+              controller: _slideControl,
+              secondaryActions: <Widget>[
+                IconSlideAction(
+                    color: Colors.grey[350],
+                    caption: 'Edit',
+                    icon: Icons.edit,
+                    onTap: () async {
+                      await editVoc(context, index, filtered);
+                      await getVocableList().whenComplete(() {
+                        _searchInput(searchString);
+                      });
+
+                      setState(() {});
+                    }),
+                IconSlideAction(
+                  color: Colors.red,
+                  caption: 'Delete',
+                  icon: Icons.delete,
+                  onTap: () async {
+                    await deleteVocableTable(filtered[index]['id']);
+                    await getVocableList().whenComplete(() {
+                      _searchInput(searchString);
+                    });
+
+                    setState(() {});
+                  },
+                )
+              ],
+              actionPane: SlidableDrawerActionPane(),
+              child: Card(
+                  child: InkWell(
+                      child: Container(
+                        height: 110,
+                        child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                            children: <Widget>[
+                              Container(
+                                  width:
+                                      MediaQuery.of(context).size.width * 0.5 -
+                                          10,
+                                  child: Column(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      children: [
+                                        Text(filtered[index]['word'],
+                                            style: TextStyle(fontSize: 17),
+                                            overflow: TextOverflow.clip,
+                                            textAlign: TextAlign.center),
+                                        Text(filtered[index]['wordNote'],
+                                            style: TextStyle(
+                                                fontSize: 11,
+                                                color: Colors.grey),
+                                            textAlign: TextAlign.center)
+                                      ])),
+                              Container(
+                                  width: 10,
+                                  margin: EdgeInsets.symmetric(vertical: 10.0),
+                                  child: VerticalDivider(
+                                    color: Colors.amber,
+                                    thickness: 0.5,
+                                  )),
+                              Container(
+                                  width:
+                                      MediaQuery.of(context).size.width * 0.5 -
+                                          10,
+                                  child: Column(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      children: [
+                                        Text(filtered[index]['translation'],
+                                            style: TextStyle(fontSize: 17),
+                                            overflow: TextOverflow.clip,
+                                            textAlign: TextAlign.center),
+                                        Text(filtered[index]['translationNote'],
+                                            style: TextStyle(
+                                                fontSize: 11,
+                                                color: Colors.grey),
+                                            textAlign: TextAlign.center)
+                                      ]))
+                            ]),
+                      ),
+                      onTap: () {
+                        print(index);
+                        speakWord(filtered[index]['translation']);
+                      })));
+        });
+  }
+
 // create vocable list
   Widget voclist(context) {
     SlidableController _slideControl;
 
-    print(vocableList);
     if (vocableList != null) {
-      return ListView.builder(
-          scrollDirection: Axis.vertical,
-          itemCount: vocableList.length,
-          shrinkWrap: true,
-          itemBuilder: (context, index) {
-            return new Slidable(
-                controller: _slideControl,
-                secondaryActions: <Widget>[
-                  IconSlideAction(
-                      color: Colors.grey[350],
-                      caption: 'Edit',
-                      icon: Icons.edit,
-                      onTap: () async {
-                        await editVoc(context, index);
-                        await getVocableList();
-                        setState(() {});
-                      }),
-                  IconSlideAction(
-                    color: Colors.red,
-                    caption: 'Delete',
-                    icon: Icons.delete,
-                    onTap: () async {
-                      await deleteVocableTable(vocableList[index]['id']);
-                      await getVocableList();
-                      setState(() {});
-                    },
-                  )
-                ],
-                actionPane: SlidableDrawerActionPane(),
-                child: Card(
-                  child: InkWell(
-                    child: Container(
-                      height: 110,
-                      child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                          children: withOrWithoutCheckbox(
-                              deleteBool, index, context)),
-                    ),
-                    onTap: () {
-                      print(index);
-                      speakWord(vocableList[index]['translation']);
-                      // setState(() async {
-                      //   await editVoc(context, index);
-                      //   await getVocableList();
-                      // });
-                    },
-                  ),
-                ));
-          });
+      return Column(children: [
+        _searchBar(context),
+        Expanded(
+            child: showSearchBar
+                ? _showresults(context)
+                : ListView.builder(
+                    scrollDirection: Axis.vertical,
+                    itemCount: vocableList.length,
+                    shrinkWrap: true,
+                    itemBuilder: (context, index) {
+                      return new Slidable(
+                          controller: _slideControl,
+                          secondaryActions: <Widget>[
+                            IconSlideAction(
+                                color: Colors.grey[350],
+                                caption: 'Edit',
+                                icon: Icons.edit,
+                                onTap: () async {
+                                  await editVoc(context, index, vocableList);
+                                  await getVocableList();
+                                  setState(() {});
+                                }),
+                            IconSlideAction(
+                              color: Colors.red,
+                              caption: 'Delete',
+                              icon: Icons.delete,
+                              onTap: () async {
+                                await deleteVocableTable(
+                                    vocableList[index]['id']);
+                                await getVocableList();
+                                setState(() {});
+                              },
+                            )
+                          ],
+                          actionPane: SlidableDrawerActionPane(),
+                          child: Card(
+                            child: InkWell(
+                              child: Container(
+                                height: 110,
+                                child: Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceEvenly,
+                                    children: withOrWithoutCheckbox(
+                                        deleteBool, index, context)),
+                              ),
+                              onTap: () {
+                                print(index);
+                                speakWord(vocableList[index]['translation']);
+                                // setState(() async {
+                                //   await editVoc(context, index);
+                                //   await getVocableList();
+                                // });
+                              },
+                            ),
+                          ));
+                    }))
+      ]);
     }
     {
       return new Container();
@@ -620,6 +770,7 @@ class ListVocabState extends State<ListVocab> {
         mainAxisAlignment: MainAxisAlignment.center,
         children: <Widget>[
           RaisedButton(
+              color: Colors.amber[400],
               onPressed: () {
                 deleteBool = false;
                 select2del = [];
@@ -627,6 +778,7 @@ class ListVocabState extends State<ListVocab> {
               },
               child: Text("cancel")),
           RaisedButton(
+              color: Colors.amber[400],
               onPressed: () async {
                 for (var i = 0; i < select2del.length; i++) {
                   if (select2del[i] == true) {
@@ -710,11 +862,11 @@ class ListVocabState extends State<ListVocab> {
   }
 
 // dialog to change existing vocables
-  Future<String> editVoc(BuildContext context, int index) async {
-    String word = vocableList[index]['word'];
-    String translation = vocableList[index]['translation'];
-    String wordNote = vocableList[index]['wordNote'];
-    String translationNote = vocableList[index]['translationNote'];
+  Future<String> editVoc(BuildContext context, int index, List listname) async {
+    String word = listname[index]['word'];
+    String translation = listname[index]['translation'];
+    String wordNote = listname[index]['wordNote'];
+    String translationNote = listname[index]['translationNote'];
 
     return showDialog<String>(
         context: context,
@@ -730,8 +882,8 @@ class ListVocabState extends State<ListVocab> {
               mainAxisSize: MainAxisSize.min,
               children: <Widget>[
                 new TextField(
-                  controller: new TextEditingController(
-                      text: vocableList[index]['word']),
+                  controller:
+                      new TextEditingController(text: listname[index]['word']),
                   autofocus: true,
                   decoration: new InputDecoration(hintText: 'word'),
                   onChanged: (value) {
@@ -740,7 +892,7 @@ class ListVocabState extends State<ListVocab> {
                 ),
                 new TextField(
                   controller: new TextEditingController(
-                      text: vocableList[index]['wordNote']),
+                      text: listname[index]['wordNote']),
                   autofocus: true,
                   decoration: new InputDecoration(hintText: 'note'),
                   onChanged: (value) {
@@ -749,7 +901,7 @@ class ListVocabState extends State<ListVocab> {
                 ),
                 new TextField(
                   controller: new TextEditingController(
-                      text: vocableList[index]['translation']),
+                      text: listname[index]['translation']),
                   autofocus: true,
                   decoration: new InputDecoration(hintText: 'translation'),
                   onChanged: (value) {
@@ -758,7 +910,7 @@ class ListVocabState extends State<ListVocab> {
                 ),
                 new TextField(
                   controller: new TextEditingController(
-                      text: vocableList[index]['translationNote']),
+                      text: listname[index]['translationNote']),
                   autofocus: true,
                   decoration: new InputDecoration(hintText: 'note'),
                   onChanged: (value) {
@@ -773,12 +925,12 @@ class ListVocabState extends State<ListVocab> {
                 onPressed: () async {
                   Navigator.of(context).pop(word);
                   await updateVocableTable(VocableTable(
-                      id: vocableList[index]['id'],
+                      id: listname[index]['id'],
                       word: word,
                       wordNote: wordNote,
                       translation: translation,
                       translationNote: translationNote,
-                      section: vocableList[index]['section']));
+                      section: listname[index]['section']));
                   // await getVocableList();
                 },
               )
@@ -793,7 +945,6 @@ class ListVocabState extends State<ListVocab> {
     int largestId;
     bool indexChosen = false;
     await getVocableListId();
-    print(idList);
 
     //finding id that isn't already used
     if (idList.length > 0) {
@@ -809,7 +960,6 @@ class ListVocabState extends State<ListVocab> {
       if (indexChosen == false) {
         index = largestId + 1;
       }
-      print(largestId);
     }
 
     var voc = VocableTable(
@@ -844,7 +994,6 @@ class ListVocabState extends State<ListVocab> {
       if (indexChosen == false) {
         index = largestId + 1;
       }
-      print(largestId);
     }
 
     var voc = VocableTable(
@@ -864,8 +1013,6 @@ class ListVocabState extends State<ListVocab> {
 
     vocableList = await db.query(languageCode,
         where: 'section IN (?,?,?,?,?)', whereArgs: sectionVocNum);
-
-    print(await vocable());
   }
 
 //get ids of vocable list of current language

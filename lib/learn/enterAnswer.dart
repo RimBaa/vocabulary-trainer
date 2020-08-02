@@ -82,7 +82,7 @@ class EnterAnswerState extends State<EnterAnswerCl> {
               Duration(seconds: 2),
               (Timer t) => setState(() {
                     answered = false;
-                    print(mounted);
+
                     timer.cancel();
                     widget.callback();
                   }));
@@ -92,7 +92,7 @@ class EnterAnswerState extends State<EnterAnswerCl> {
             Duration(seconds: 2),
             (Timer t) => setState(() {
                   answered = false;
-                  print(mounted);
+
                   timer.cancel();
                   widget.callback();
                 }));
@@ -129,6 +129,7 @@ class EnterAnswerState extends State<EnterAnswerCl> {
                     top: MediaQuery.of(context).size.height * 0.05),
                 width: MediaQuery.of(context).size.width * 0.8,
                 child: TextField(
+                  autocorrect: false,
                   decoration: InputDecoration(
                       enabledBorder: OutlineInputBorder(
                           borderSide:

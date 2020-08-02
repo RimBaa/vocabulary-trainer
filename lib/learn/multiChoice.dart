@@ -86,6 +86,7 @@ class MultChoiceState extends State<MultChoiceCl> {
       int randNumb;
       Random rnd = new Random();
       multChoiceList.add(widget.questionId);
+
       while (multChoiceList.length < 4) {
         randNumb = rnd.nextInt(vocableLearnList.length);
 
@@ -103,7 +104,7 @@ class MultChoiceState extends State<MultChoiceCl> {
               Duration(seconds: 2),
               (Timer t) => setState(() {
                     answered = false;
-                    print(mounted);
+
                     timer.cancel();
                     widget.callback();
                   }));
@@ -113,7 +114,7 @@ class MultChoiceState extends State<MultChoiceCl> {
             Duration(seconds: 2),
             (Timer t) => setState(() {
                   answered = false;
-                  print(mounted);
+
                   timer.cancel();
                   widget.callback();
                 }));

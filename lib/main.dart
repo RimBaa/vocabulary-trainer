@@ -31,7 +31,7 @@ class VocabularyState extends State<VocabularyApp> {
     prefs = await SharedPreferences.getInstance();
     language = prefs.getString('language') ?? 'English';
     languageCode = prefs.getString('languageCode') ?? 'en';
-    print(languageCode);
+
     ListVocabState vocObj = new ListVocabState();
     getDatabase().whenComplete(() {
       vocObj.getVocableList().whenComplete(() {

@@ -18,5 +18,6 @@ String language = '';
 List<bool> chosenSectionList;
 List<bool> chosenSectionVocList;
 bool readTrans = true;
+bool test = false;
 
 bool direction = true; // true -> ask translation, false -> aks word

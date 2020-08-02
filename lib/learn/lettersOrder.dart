@@ -75,6 +75,7 @@ class LettersOrderState extends State<LettersOrder> {
     String answer = vocableLearnList[widget.questionId][widget.answerMode];
 
     print(widget.correctCounter);
+
     if (answered == false) {
       lettersList = [];
       answerColor = Colors.grey[300];
@@ -107,7 +108,7 @@ class LettersOrderState extends State<LettersOrder> {
               Duration(seconds: 2),
               (Timer t) => setState(() {
                     answered = false;
-                    print(mounted);
+
                     timer.cancel();
                     widget.callback();
                   }));
@@ -117,7 +118,7 @@ class LettersOrderState extends State<LettersOrder> {
             Duration(seconds: 2),
             (Timer t) => setState(() {
                   answered = false;
-                  print(mounted);
+
                   timer.cancel();
                   widget.callback();
                 }));

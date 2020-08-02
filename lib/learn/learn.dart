@@ -91,9 +91,7 @@ class LearnState extends State<Learn> {
   void callbackSet() {
     setState(() {
       if (newSession == false) {
-        print(progressvalue);
         progressvalue += addprogress;
-        print(progressvalue);
       }
 
       newSession = false;
@@ -338,9 +336,6 @@ class LearnState extends State<Learn> {
           }
         }
         questionId = questionList[0];
-
-        print(questionId);
-        print(questionList);
         wordOrtransl = rnd.nextInt(2);
 
         if (wordOrtransl == 0) {
